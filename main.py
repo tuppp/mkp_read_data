@@ -7,7 +7,6 @@ import csv
 import re
 import json
 
-
 class Station:
   id = None
   recording_start = None
@@ -59,39 +58,39 @@ class MeasuredData:
     station_name = name
     station_plz = plz
 
-def get_plz_from_geo(lat, lng):
-   contents = urllib.request.urlopen("https://maps.googleapis.com/maps/api/geocode/json?latlng="+str(lat)+","+str(lng)+"&sensor=false")
+  def get_plz_from_geo(lat, lng):
+    contents = urllib.request.urlopen("https://maps.googleapis.com/maps/api/geocode/json?latlng="+str(lat)+","+str(lng)+"&sensor=false")
 
-   j = json.load(contents)
-   print ("Das Json geloaded")
-   print (j)
+     j = json.load(contents)
+     print ("Das Json geloaded")
+     print (j)
 
-   print("\nDas Json geparst")
-   plz = j['results'][0]['address_components'][7]['long_name']
-   #print (plz)
-   return plz
+     print("\nDas Json geparst")
+     plz = j['results'][0]['address_components'][7]['long_name']
+     #print (plz)
+     return plz
 
 
   def __init__(self, stations_id,mess_datum,qn_3,fx,fm,qn_4,rsk,rskf,sdk,shk_tag,nm,vpm,pm,tmk,upm,txk,tnk,tgk,eor):
-  self.station_id = stations_id
-  self.mess_datum = mess_datum
-  self.qn_3
-  self.fx = fx
-  self.fm = fm
-  self.qn_4 = qn_4
-  self.rsk = rsk
-  self.rskf = rskf
-  self.sdk = sdk
-  self.shk_tag = shk_tag
-  self.nm = nm
-  self.vpm = vpm
-  self.pm = pm
-  self.tmk = tmk
-  self.upm = upm
-  self.txk = txk
-  self.tnk = tnk
-  self.tgk = tgk
-  self.eor = eor
+    self.station_id = stations_id
+    self.mess_datum = mess_datum
+    self.qn_3
+    self.fx = fx
+    self.fm = fm
+    self.qn_4 = qn_4
+    self.rsk = rsk
+    self.rskf = rskf
+    self.sdk = sdk
+    self.shk_tag = shk_tag
+    self.nm = nm
+    self.vpm = vpm
+    self.pm = pm
+    self.tmk = tmk
+    self.upm = upm
+    self.txk = txk
+    self.tnk = tnk
+    self.tgk = tgk
+    self.eor = eor
 
 class DWD:
 
