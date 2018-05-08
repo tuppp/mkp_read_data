@@ -104,7 +104,7 @@ class DWD:
 
       for x in range(2,len(lines)):
         lines[x] = re.sub(' +','',lines[x])
-        line = lines[x].split('')
+        line = lines[x].split(';')
         new_station = Station(line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7])
         stations.append(new_station)
 
@@ -131,7 +131,7 @@ class DWD:
     data = []
 
     with open(local_file + ".csv") as csvfile:
-      readCSV = csv.reader(csvfile, delimiter='')
+      readCSV = csv.reader(csvfile, delimiter=';')
       first_row = True
       for row in readCSV:
           if(first_row == False):
