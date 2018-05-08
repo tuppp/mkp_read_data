@@ -88,12 +88,19 @@ class DWD:
       station_data.append(dwd.get_station_data(station.id, self.fetch_start_date))
 
 
-    full_list = concate_lists(station_data)
+    full_list = concatenate_lists(station_data)
 
     export_csv(full_list)
 
     return true
   #
+
+  concatenate_lists(station_data):
+    completelist = []
+    for station in stationdata:
+      completelist += station
+    return completelist
+
 
   get_stations:
     urllib.request.urlretrieve(self.station_list, "temp")
