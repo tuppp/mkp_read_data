@@ -57,6 +57,12 @@ class MeasuredData:
   set_station_data(name,plz):
     station_name = name
     station_plz = plz
+    
+  get_station_by_id(id, stations):
+    for station in stations:
+      if station.id == id:
+        return station
+    return null
 
   def get_plz_from_geo(lat, lng):
     contents = urllib.request.urlopen("https://maps.googleapis.com/maps/api/geocode/json?latlng="+str(lat)+","+str(lng)+"&sensor=false")
@@ -171,7 +177,11 @@ class DWD:
             #!!!
 
             current_data = MeasuredData(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14],row[15],row[16],row[17],row[18])
-            add_station_data(current_data)
+            stations = dwd.get_stations()
+            station = get_station_by_id(current_data.id, stations)
+            if station != null:
+              current_data.set_station_data(station.name, station.zip_code)
+
 
             data.append(current_data)
             
