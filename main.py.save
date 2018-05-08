@@ -5,7 +5,7 @@ import fnmatch
 import shutil
 import csv
 import re
-import json
+
 
 
 class Station:
@@ -59,17 +59,6 @@ class MeasuredData:
     station_name = name
     station_plz = plz
 
-def get_plz_from_geo(lat, lng):
-   contents = urllib.request.urlopen("https://maps.googleapis.com/maps/api/geocode/json?latlng="+str(lat)+","+str(lng)+"&sensor=false")
-
-   j = json.load(contents)
-   print ("Das Json geloaded")
-   print (j)
-
-   print("\nDas Json geparst")
-   plz = j['results'][0]['address_components'][7]['long_name']
-   #print (plz)
-   return plz
 
 
   def __init__(self, stations_id,mess_datum,qn_3,fx,fm,qn_4,rsk,rskf,sdk,shk_tag,nm,vpm,pm,tmk,upm,txk,tnk,tgk,eor):
