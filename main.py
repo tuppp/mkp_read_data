@@ -20,10 +20,12 @@ class Station:
   self.state = state
 
 class MeasuredData:
-  station_id = None
+  
+  
   station_name = None
   station_plz = None
 
+  station_id = None
   mess_datum = None
   qn_3 = None
   fx = None
@@ -43,8 +45,7 @@ class MeasuredData:
   tgk = None
   eor = None
 
-  set_station_data(id,name,plz):
-    station_id = id
+  set_station_data(name,plz):
     station_name = name
     station_plz = plz
 
@@ -147,7 +148,7 @@ class DWD:
             #TODO: Checken, ob Eintrag älter als start_date
             #!!!
 
-            current_data = StationData(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14],row[15],row[16],row[17],row[18])
+            current_data = MeasuredData(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14],row[15],row[16],row[17],row[18])
             add_station_data(current_data)
 
             data.append(current_data)
