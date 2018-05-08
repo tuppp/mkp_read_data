@@ -1,3 +1,13 @@
+import urllib.request
+import zipfile
+import os
+import fnmatch
+import shutil
+import csv
+import re
+
+
+
 class Station:
   id = None
   recording_start = None
