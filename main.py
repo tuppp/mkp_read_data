@@ -102,7 +102,7 @@ class DWD:
     return completelist
 
 
-  get_stations:
+  get_stations(self):
     urllib.request.urlretrieve(self.station_list, "temp")
       with open("temp", 'r', encoding='cp1252') as f:
         lines = f.readlines()
@@ -120,7 +120,7 @@ class DWD:
       return stations
 
 
-  get_station_data:
+  get_station_data(self, station_id, start_date):
     local_file = "station_" + station_id
 
     urllib.request.urlretrieve(self.file_url + self.file_prefix + station_id + self.file_suffix, local_file + ".zip")
