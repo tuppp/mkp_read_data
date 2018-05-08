@@ -19,14 +19,14 @@ class Station:
   zip_code = None
 
   def __init__(self, id, recording_start, recording_end, height, latitude, longitude, name, state):
-  self.id = id
-  self.recording_start = recording_start
-  self.recording_end = recording_end
-  self.height = height
-  self.latitude = latitude
-  self.longitude = longitude
-  self.name = name
-  self.state = state
+    self.id = id
+    self.recording_start = recording_start
+    self.recording_end = recording_end
+    self.height = height
+    self.latitude = latitude
+    self.longitude = longitude
+    self.name = name
+    self.state = state
 
 class MeasuredData:
   
