@@ -142,12 +142,17 @@ class DWD:
       first_row = True
       for row in readCSV:
           if(first_row == False):
-            
+
             #!!!
             #TODO: Checken, ob Eintrag älter als start_date
             #!!!
 
-            data.append(StationData(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14],row[15],row[16],row[17],row[18]))
+            current_data = StationData(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14],row[15],row[16],row[17],row[18])
+            add_station_data(current_data)
+
+            data.append(current_data)
+            
+
           else:
             first_row = False
     os.remove(local_file + ".csv")
