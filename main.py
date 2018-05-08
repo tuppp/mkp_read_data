@@ -71,6 +71,13 @@ class MeasuredData:
 
 class DWD:
 
+  file_prefix = "tageswerte_KL_"
+  file_suffix = "_akt.zip"
+  file_url = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/"
+  station_list = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/KL_Tageswerte_Beschreibung_Stationen.txt"
+  fetch_start_date = 20180508
+
+
   #saves a list of cleaned weather data as csv
   get_weather_data:
     stations = dwd.get_stations()
@@ -78,7 +85,7 @@ class DWD:
     station_data = []
 
     for station in stations:
-      station_data.append(dwd.get_station_data("00078", start_date))
+      station_data.append(dwd.get_station_data(station.id, self.fetch_start_date))
 
 
     full_list = concate_lists(station_data)
@@ -89,14 +96,50 @@ class DWD:
   #
 
   get_stations:
-  #...
-  #...
+    urllib.request.urlretrieve(self.station_list, "temp")
+      with open("temp", 'r', encoding='cp1252') as f:
+        lines = f.readlines()
+
+      stations = []
+
+      for x in range(2,len(lines)):
+        lines[x] = re.sub(' +','',lines[x])
+        line = lines[x].split('')
+        new_station = Station(line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7])
+        stations.append(new_station)
+
+      os.remove("temp")
+
+      return stations
 
 
   get_station_data:
-    #...
-    #get_zip_code(lat,lon)
-    #
+    local_file = "station_" + station_id
+
+    urllib.request.urlretrieve(self.file_url + self.file_prefix + station_id + self.file_suffix, local_file + ".zip")
+    zip_ref = zipfile.ZipFile(local_file + ".zip", 'r')
+    zip_ref.extractall(local_file)
+    zip_ref.close()
+    os.remove(local_file + ".zip")
+
+    for file in os.listdir(local_file):
+      if fnmatch.fnmatch(file, "produkt_klima_tag*"):
+        os.rename(local_file + "/"+ file, local_file + ".csv")
+
+    shutil.rmtree(local_file)
+
+    data = []
+
+    with open(local_file + ".csv") as csvfile:
+      readCSV = csv.reader(csvfile, delimiter='')
+      first_row = True
+      for row in readCSV:
+          if(first_row == False):
+            data.append(StationData(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14],row[15],row[16],row[17],row[18]))
+          else:
+            first_row = False
+    os.remove(local_file + ".csv")
+    return data
 
   get_zip_code(lat, lon):
     zip_code = 0
