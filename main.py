@@ -96,6 +96,8 @@ class MeasuredData:
 
 class DWD:
 
+  stations = None;
+
 
   file_prefix = "tageswerte_KL_"
   file_suffix = "_akt.zip"
@@ -115,12 +117,12 @@ class DWD:
   def get_weather_data(self):
 
     print("Get stations")
-    stations = dwd.get_stations()
+    self.stations = dwd.get_stations()
 
     station_data = []
 
 
-    for station in stations:
+    for station in self.stations:
       print("Get Data from Station " + station.id)
       station_data.append(dwd.get_station_data(station.id, self.fetch_start_date))
 
@@ -201,8 +203,7 @@ class DWD:
           if(first_row == False):
 
             current_data = MeasuredData(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14],row[15],row[16],row[17],row[18])
-            stations = dwd.get_stations()
-            station = self.get_station_by_id(current_data.station_id, stations)
+            station = self.get_station_by_id(current_data.station_id, self.stations)
             if station != None:
               current_data.set_station_data(station.name, station.zip_code)
 
@@ -222,11 +223,6 @@ class DWD:
     zip_code = 0
     return zip_code
 
-
-
-dwd = DWD()
-
-dwd.get_weather_data();
 
 def intoCSV(list, f_name):
   array = np.array()
@@ -291,3 +287,8 @@ def csvparser(f_name):
 
   df = pd.DataFrame(result)
   df.to_csv("result.csv", header=None, index=None)
+
+
+dwd = DWD()
+
+dwd.get_weather_data();
