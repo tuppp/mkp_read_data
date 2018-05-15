@@ -103,7 +103,7 @@ class DWD:
   file_prefix = "tageswerte_KL_"
   file_suffix = "_akt.zip"
   file_url = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/"
-  station_list = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/KL_Tageswerte_Beschreibung_Stationen.txt"
+  station_list = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/srecent/KL_Tageswerte_Beschreibung_Stationen.txt"
   fetch_start_date = 20180508
 
 
@@ -171,10 +171,6 @@ class DWD:
       first_row = True
       for row in readCSV:
           if(first_row == False):
-
-            #!!!
-            #TODO: Checken, ob Eintrag älter als start_date
-            #!!!
 
             current_data = MeasuredData(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14],row[15],row[16],row[17],row[18])
             stations = dwd.get_stations()
