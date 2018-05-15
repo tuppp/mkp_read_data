@@ -29,8 +29,8 @@ class Station:
     self.state = state
 
 class MeasuredData:
-  
-  
+
+
   station_name = None
   station_plz = None
 
@@ -54,11 +54,11 @@ class MeasuredData:
   tgk = None
   eor = None
 
-  set_station_data(name,plz):
-    station_name = name
-    station_plz = plz
-    
-  get_station_by_id(id, stations):
+  def set_station_data(name, plz):
+    self.station_name = name
+    self.station_plz = plz
+
+  def get_station_by_id(id, stations):
     for station in stations:
       if station.id == id:
         return station
@@ -66,15 +66,14 @@ class MeasuredData:
 
   def get_plz_from_geo(lat, lng):
     contents = urllib.request.urlopen("https://maps.googleapis.com/maps/api/geocode/json?latlng="+str(lat)+","+str(lng)+"&sensor=false")
+    j = json.load(contents)
+    print ("Das Json geloaded")
+    print (j)
 
-     j = json.load(contents)
-     print ("Das Json geloaded")
-     print (j)
-
-     print("\nDas Json geparst")
-     plz = j['results'][0]['address_components'][7]['long_name']
-     #print (plz)
-     return plz
+    print("\nDas Json geparst")
+    plz = j['results'][0]['address_components'][7]['long_name']
+    #print (plz)
+    return plz
 
 
   def __init__(self, stations_id,mess_datum,qn_3,fx,fm,qn_4,rsk,rskf,sdk,shk_tag,nm,vpm,pm,tmk,upm,txk,tnk,tgk,eor):
@@ -108,7 +107,7 @@ class DWD:
 
 
   #saves a list of cleaned weather data as csv
-  get_weather_data:
+  def get_weather_data(self):
     stations = dwd.get_stations()
 
     station_data = []
@@ -124,17 +123,18 @@ class DWD:
     return true
   #
 
-  concatenate_lists(station_data):
+  def concatenate_lists(station_data):
     completelist = []
     for station in stationdata:
       completelist += station
     return completelist
 
 
-  get_stations(self):
+  def get_stations(self):
     urllib.request.urlretrieve(self.station_list, "temp")
-      with open("temp", 'r', encoding='cp1252') as f:
-        lines = f.readlines()
+    
+    with open("temp", 'r', encoding='cp1252') as f:
+      lines = f.readlines()
 
       stations = []
 
@@ -149,7 +149,7 @@ class DWD:
       return stations
 
 
-  get_station_data(self, station_id, start_date):
+  def get_station_data(self, station_id, start_date):
     local_file = "station_" + station_id
 
     urllib.request.urlretrieve(self.file_url + self.file_prefix + station_id + self.file_suffix, local_file + ".zip")
@@ -187,7 +187,7 @@ class DWD:
     os.remove(local_file + ".csv")
     return data
 
-  get_zip_code(lat, lon):
+  def get_zip_code(lat, lon):
     zip_code = 0
     return zip_code
 
