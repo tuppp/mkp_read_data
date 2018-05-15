@@ -1,3 +1,4 @@
 # das csv zeugs halt nicht mit drin
 *.csv#
 *.csv
+/.idea
