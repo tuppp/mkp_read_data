@@ -1,4 +1,7 @@
 # das csv zeugs halt nicht mit drin
 *.csv#
 *.csv
+*.xml
+
+# und der komische ordner
 /.idea
