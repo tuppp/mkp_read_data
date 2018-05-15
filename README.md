@@ -7,7 +7,7 @@ Exportieren der Wetterdaten vom DWD in eine CSV
 
 ### Prerequisites
 
-Es wird lediglich Pandas benötigt
+Es wird lediglich Python3 und Pandas benötigt
 
 
 ### Installing
