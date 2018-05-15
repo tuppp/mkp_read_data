@@ -5,6 +5,7 @@ import fnmatch
 import shutil
 import csv
 import re
+from pprint import pprint
 import json
 
 class Station:
@@ -58,12 +59,6 @@ class MeasuredData:
     self.station_name = name
     self.station_plz = plz
 
-  def get_station_by_id(id, stations):
-    for station in stations:
-      if station.id == id:
-        return station
-    return null
-
   def get_plz_from_geo(lat, lng):
     contents = urllib.request.urlopen("https://maps.googleapis.com/maps/api/geocode/json?latlng="+str(lat)+","+str(lng)+"&sensor=false")
     j = json.load(contents)
@@ -99,11 +94,19 @@ class MeasuredData:
 
 class DWD:
 
+
   file_prefix = "tageswerte_KL_"
   file_suffix = "_akt.zip"
   file_url = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/"
-  station_list = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/srecent/KL_Tageswerte_Beschreibung_Stationen.txt"
+  station_list = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/KL_Tageswerte_Beschreibung_Stationen.txt"
   fetch_start_date = 20180508
+
+
+  def get_station_by_id(id, stations):
+    for station in stations:
+      if station.id == id:
+        return station
+    return null
 
 
   #saves a list of cleaned weather data as csv
@@ -139,8 +142,9 @@ class DWD:
       stations = []
 
       for x in range(2,len(lines)):
-        lines[x] = re.sub(' +','',lines[x])
+        lines[x] = re.sub(' +',';',lines[x])
         line = lines[x].split(';')
+
         new_station = Station(line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7])
         stations.append(new_station)
 
@@ -152,7 +156,13 @@ class DWD:
   def get_station_data(self, station_id, start_date):
     local_file = "station_" + station_id
 
-    urllib.request.urlretrieve(self.file_url + self.file_prefix + station_id + self.file_suffix, local_file + ".zip")
+    data = []
+
+    try:
+      urllib.request.urlretrieve(self.file_url + self.file_prefix + station_id + self.file_suffix, local_file + ".zip")
+    except Exception:
+      return data
+
     zip_ref = zipfile.ZipFile(local_file + ".zip", 'r')
     zip_ref.extractall(local_file)
     zip_ref.close()
@@ -164,7 +174,7 @@ class DWD:
 
     shutil.rmtree(local_file)
 
-    data = []
+    
 
     with open(local_file + ".csv") as csvfile:
       readCSV = csv.reader(csvfile, delimiter=';')
@@ -174,7 +184,7 @@ class DWD:
 
             current_data = MeasuredData(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14],row[15],row[16],row[17],row[18])
             stations = dwd.get_stations()
-            station = get_station_by_id(current_data.id, stations)
+            station = self.get_station_by_id(current_data.id, stations)
             if station != null:
               current_data.set_station_data(station.name, station.zip_code)
 
