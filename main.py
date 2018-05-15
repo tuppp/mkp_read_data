@@ -121,32 +121,37 @@ class DWD:
 
     station_data = []
 
+    i=0
 
     for station in self.stations:
       print("Get Data from Station " + station.id)
       station_data.append(dwd.get_station_data(station.id, self.fetch_start_date))
+      i=i+1;
+
+      if(i == 10):
+        break
 
 
     print("Concatenate lists")
-    full_list = concatenate_lists(station_data)
+    full_list = self.concatenate_lists(station_data)
     print("->done")
 
     print("Save csv")
-    intoCSV("test.csv")
+    self.intoCSV(full_list, "test.csv")
     print("->saved")
 
 
     print("Parse csv")
-    csvparser(full_list, "test.csv")
+    self.csvparser(full_list, "test.csv")
     print("->parsed")
 
 
     return true
   #
 
-  def concatenate_lists(station_data):
+  def concatenate_lists(self, station_data):
     completelist = []
-    for station in stationdata:
+    for station in station_data:
       completelist += station
     return completelist
 
@@ -224,69 +229,69 @@ class DWD:
     return zip_code
 
 
-def intoCSV(list, f_name):
-  array = np.array()
+  def intoCSV(self, list, f_name):
+    array = np.array()
 
-  for i in range(list):
-    stationd = list[i]
-    array = np.vstack(array, [stationd.stations_id, stationd.mess_datum, stationd.qn_3, stationd.fx, stationd.fm, stationd.qn_4, stationd.rsk, stationd.rskf, stationd.sdk, stationd.shk_tag, stationd.nm, stationd.vpm, stationd.pm, stationd.tmk, stationd.upm, stationd.txk, stationd.tnk, stationd.tgk, stationd.eor])
+    for i in range(list):
+      stationd = list[i]
+      array = np.vstack(array, [stationd.stations_id, stationd.mess_datum, stationd.qn_3, stationd.fx, stationd.fm, stationd.qn_4, stationd.rsk, stationd.rskf, stationd.sdk, stationd.shk_tag, stationd.nm, stationd.vpm, stationd.pm, stationd.tmk, stationd.upm, stationd.txk, stationd.tnk, stationd.tgk, stationd.eor])
 
 
-  df = pd.DataFrame(array)
-  df.to_csv(f_name, header=None, index=None)
+    df = pd.DataFrame(array)
+    df.to_csv(f_name, header=None, index=None)
 
-  return
-def csvparser(f_name):
-  reader = csv.reader(open(f_name, "r"), delimiter=";")
-  x = list(reader)
-  result = np.array(x).astype(str)
 
-  result = np.delete(result, 2, 1)
-  result = np.delete(result, 2, 1)
-  result = np.delete(result, 3, 1)
-  result = np.delete(result, 5, 1)
-  result = np.delete(result, 5, 1)
-  result = np.delete(result, 5, 1)
-  result = np.delete(result, 5, 1)
-  result = np.delete(result, 5, 1)
-  result = np.delete(result, 10, 1)
-  result = np.delete(result, 9, 1)
-  result = np.delete(result, 8, 1)
-  result = np.delete(result, 7, 1)
-  result = np.delete(result, 6, 1)
+  def csvparser(self, f_name):
+    reader = csv.reader(open(f_name, "r"), delimiter=";")
+    x = list(reader)
+    result = np.array(x).astype(str)
 
-  for i in range(result.shape[1]):
-      if result[0][i] == "  FM":
-          result[0][i] = "D-Windgeschw."
-      elif result[0][i] == " RSK":
-          result[0][i] = "NS-Menge"
-      elif result[0][i] == "RSKF":
-          result[0][i] = "NS-Art"
-      elif result[0][i] == " TMK":
-          result[0][i] = "D-Temp"
+    result = np.delete(result, 2, 1)
+    result = np.delete(result, 2, 1)
+    result = np.delete(result, 3, 1)
+    result = np.delete(result, 5, 1)
+    result = np.delete(result, 5, 1)
+    result = np.delete(result, 5, 1)
+    result = np.delete(result, 5, 1)
+    result = np.delete(result, 5, 1)
+    result = np.delete(result, 10, 1)
+    result = np.delete(result, 9, 1)
+    result = np.delete(result, 8, 1)
+    result = np.delete(result, 7, 1)
+    result = np.delete(result, 6, 1)
 
-  for i in range(result.shape[0]):
-      if result[i][2] == "-999":
-          result[i][2] = np.NAN
+    for i in range(result.shape[1]):
+        if result[0][i] == "  FM":
+            result[0][i] = "D-Windgeschw."
+        elif result[0][i] == " RSK":
+            result[0][i] = "NS-Menge"
+        elif result[0][i] == "RSKF":
+            result[0][i] = "NS-Art"
+        elif result[0][i] == " TMK":
+            result[0][i] = "D-Temp"
 
-  for j in range(result.shape[0]):
-      if result[j][4] == "   0":
-          result[j][4] = "kein NS"
-      elif result[j][4] == "1":
-          result[j][4] = "Regen"
-      elif result[j][4] == "   4":
-          result[j][4] = "Form unbekannt"
-      elif result[j][4] == "   6":
-          result[j][4] = "Regen"
-      elif result[j][4] == "   7":
-          result[j][4] = "Schnee"
-      elif result[j][4] == "   8":
-              result[j][4] = "Schneeregen"
-      elif result[j][4] == "   9":
-          result[j][4] = "Nicht feststellbar"
+    for i in range(result.shape[0]):
+        if result[i][2] == "-999":
+            result[i][2] = np.NAN
 
-  df = pd.DataFrame(result)
-  df.to_csv("result.csv", header=None, index=None)
+    for j in range(result.shape[0]):
+        if result[j][4] == "   0":
+            result[j][4] = "kein NS"
+        elif result[j][4] == "1":
+            result[j][4] = "Regen"
+        elif result[j][4] == "   4":
+            result[j][4] = "Form unbekannt"
+        elif result[j][4] == "   6":
+            result[j][4] = "Regen"
+        elif result[j][4] == "   7":
+            result[j][4] = "Schnee"
+        elif result[j][4] == "   8":
+                result[j][4] = "Schneeregen"
+        elif result[j][4] == "   9":
+            result[j][4] = "Nicht feststellbar"
+
+    df = pd.DataFrame(result)
+    df.to_csv("result.csv", header=None, index=None)
 
 
 dwd = DWD()
