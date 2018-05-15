@@ -113,18 +113,30 @@ class DWD:
 
   #saves a list of cleaned weather data as csv
   def get_weather_data(self):
+
+    print("Get stations")
     stations = dwd.get_stations()
 
     station_data = []
 
+
     for station in stations:
+      print("Get Data from Station " + station.id)
       station_data.append(dwd.get_station_data(station.id, self.fetch_start_date))
 
 
+    print("Concatenate lists")
     full_list = concatenate_lists(station_data)
+    print("->done")
 
+    print("Save csv")
     intoCSV("test.csv")
+    print("->saved")
+
+
+    print("Parse csv")
     csvparser(full_list, "test.csv")
+    print("->parsed")
 
 
     return true
@@ -153,6 +165,8 @@ class DWD:
         stations.append(new_station)
 
       os.remove("temp")
+
+      print("->stations fetched")
 
       return stations
 
@@ -199,6 +213,9 @@ class DWD:
           else:
             first_row = False
     os.remove(local_file + ".csv")
+
+    print("->data fetched")
+
     return data
 
   def get_zip_code(lat, lon):
