@@ -142,7 +142,7 @@ class DWD:
 
 
     print("Parse csv")
-    self.csvparser(full_list, "test.csv")
+    self.csvparser("test.csv")
     print("->parsed")
 
 
