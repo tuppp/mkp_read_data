@@ -104,7 +104,7 @@ class DWD:
   fetch_start_date = 20180508
 
 
-  def get_station_by_id(id, stations):
+  def get_station_by_id(self, id, stations):
     for station in stations:
       if station.id == id:
         return station
