@@ -6,7 +6,6 @@ import shutil
 import csv
 import re
 
-# Stations-Klasse
 class Station:
   id = None
   recording_start = None
