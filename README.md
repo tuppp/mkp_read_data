@@ -4,6 +4,8 @@ Exportieren der Wetterdaten vom DWD in eine CSV
 
 ## Getting Started
 
+Die Daten werden von: ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/ heruntergeladen.
+
 
 ### Prerequisites
 
