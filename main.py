@@ -7,7 +7,7 @@ import csv
 import re
 from pprint import pprint
 import json
-import panda as pd
+import pandas as pd
 import numpy as np
 
 class Station:
@@ -188,7 +188,7 @@ class DWD:
 
             current_data = MeasuredData(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14],row[15],row[16],row[17],row[18])
             stations = dwd.get_stations()
-            station = self.get_station_by_id(current_data.id, stations)
+            station = self.get_station_by_id(current_data.station_id, stations)
             if station != null:
               current_data.set_station_data(station.name, station.zip_code)
 
