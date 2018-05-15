@@ -123,8 +123,7 @@ class DWD:
 
     full_list = concatenate_lists(station_data)
 
-    intoCSV(full_list, "test.csv")
-    csvparser("test.csv")
+    export_csv(full_list)
 
     return true
   #
@@ -210,7 +209,7 @@ dwd = DWD()
 
 dwd.get_weather_data();
 
-def intoCSV(list, file_name):
+def intoCSV(list):
   array = np.array()
 
   for i in range(list):
@@ -219,11 +218,11 @@ def intoCSV(list, file_name):
 
 
   df = pd.DataFrame(array)
-  df.to_csv(file_name, header=None, index=None)
+  df.to_csv("result.csv", header=None, index=None)
 
   return
- def csvparser(file_name):
-     reader = csv.reader(open(file_name, "r"), delimiter=";")
+ def csvparser():
+     reader = csv.reader(open("testdata.csv", "r"), delimiter=";")
 x = list(reader)
 result = np.array(x).astype(str)
 
