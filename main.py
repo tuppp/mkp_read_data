@@ -7,8 +7,6 @@ import csv
 import re
 from pprint import pprint
 import json
-import panda as pd
-import numpy as np
 
 class Station:
   id = None
@@ -104,11 +102,11 @@ class DWD:
   fetch_start_date = 20180508
 
 
-  def get_station_by_id(id, stations):
+  def get_station_by_id(self, id, stations):
     for station in stations:
       if station.id == id:
         return station
-    return null
+    return None
 
 
   #saves a list of cleaned weather data as csv
@@ -186,8 +184,8 @@ class DWD:
 
             current_data = MeasuredData(row[0],row[1],row[2],row[3],row[4],row[5],row[6],row[7],row[8],row[9],row[10],row[11],row[12],row[13],row[14],row[15],row[16],row[17],row[18])
             stations = dwd.get_stations()
-            station = self.get_station_by_id(current_data.id, stations)
-            if station != null:
+            station = self.get_station_by_id(current_data.station_id, stations)
+            if station != None:
               current_data.set_station_data(station.name, station.zip_code)
 
 
@@ -208,67 +206,3 @@ class DWD:
 dwd = DWD()
 
 dwd.get_weather_data();
-
-def intoCSV(list):
-  array = np.array()
-
-  for i in range(list):
-    stationd = list[i]
-    array = np.vstack(array, [stationd.stations_id, stationd.mess_datum, stationd.qn_3, stationd.fx, stationd.fm, stationd.qn_4, stationd.rsk, stationd.rskf, stationd.sdk, stationd.shk_tag, stationd.nm, stationd.vpm, stationd.pm, stationd.tmk, stationd.upm, stationd.txk, stationd.tnk, stationd.tgk, stationd.eor])
-
-
-  df = pd.DataFrame(array)
-  df.to_csv("result.csv", header=None, index=None)
-
-  return
- def csvparser():
-     reader = csv.reader(open("testdata.csv", "r"), delimiter=";")
-x = list(reader)
-result = np.array(x).astype(str)
-
-result = np.delete(result, 2, 1)
-result = np.delete(result, 2, 1)
-result = np.delete(result, 3, 1)
-result = np.delete(result, 5, 1)
-result = np.delete(result, 5, 1)
-result = np.delete(result, 5, 1)
-result = np.delete(result, 5, 1)
-result = np.delete(result, 5, 1)
-result = np.delete(result, 10, 1)
-result = np.delete(result, 9, 1)
-result = np.delete(result, 8, 1)
-result = np.delete(result, 7, 1)
-result = np.delete(result, 6, 1)
-
-for i in range(result.shape[1]):
-    if result[0][i] == "  FM":
-        result[0][i] = "D-Windgeschw."
-    elif result[0][i] == " RSK":
-        result[0][i] = "NS-Menge"
-    elif result[0][i] == "RSKF":
-        result[0][i] = "NS-Art"
-    elif result[0][i] == " TMK":
-        result[0][i] = "D-Temp"
-
-for i in range(result.shape[0]):
-    if result[i][2] == "-999":
-        result[i][2] = np.NAN
-
-for j in range(result.shape[0]):
-    if result[j][4] == "   0":
-        result[j][4] = "kein NS"
-    elif result[j][4] == "1":
-        result[j][4] = "Regen"
-    elif result[j][4] == "   4":
-        result[j][4] = "Form unbekannt"
-    elif result[j][4] == "   6":
-        result[j][4] = "Regen"
-    elif result[j][4] == "   7":
-        result[j][4] = "Schnee"
-    elif result[j][4] == "   8":
-            result[j][4] = "Schneeregen"
-    elif result[j][4] == "   9":
-        result[j][4] = "Nicht feststellbar"
-
-df = pd.DataFrame(result)
-df.to_csv("result.csv", header=None, index=None)
