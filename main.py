@@ -224,7 +224,7 @@ class DWD:
         return zip_code
 
     def intoCSV(self, list, f_name):
-        array = [["STATIONS_ID;"],["MESS_DATUM;"],["QN_3;"],["  FX"],["  FM"],["QN_4"],[" RSK"],["RSKF"],[" SDK"],["SHK_TAG"],["  NM"],[" VPM"],["  PM"],[" TMK"],[" UPM"],[" TXK"],[" TNK"],[" TGK"],[ "eor"]]
+        array = [["STATIONS_ID;"],["MESS_DATUM;"],["QN_3;"],["FX"],["FM"],["QN_4"],["RSK"],["RSKF"],["SDK"],["SHK_TAG"],["NM"],["VPM"],["PM"],["TMK"],["UPM"],["TXK"],["TNK"],["TGK"],[ "eor"]]
 
         print(list.__sizeof__())
         for i in range(list.__len__()):
@@ -234,62 +234,68 @@ class DWD:
                                [stationd.qn_4], [stationd.rsk], [stationd.rskf], [stationd.sdk], [stationd.shk_tag], [stationd.nm],
                                [stationd.vpm], [stationd.pm], [stationd.tmk], [stationd.upm], [stationd.txk], [stationd.tnk],
                                [stationd.tgk], [stationd.eor]]))
-            print(i)
+                               
+        for i in range(array.shape[1]):
+            if array[0][i] == "FM":
+                array[0][i] = "D-Windgeschw."
+            elif array[0][i] == "RSK":
+                array[0][i] = "NS-Menge"
+            elif array[0][i] == "RSKF":
+                array[0][i] = "NS-Art"
+            elif array[0][i] == "TMK":
+                array[0][i] = "D-Temp"
+            elif array[0][i] == "STATIONS_ID":
+                array[0][i] = "ID"
+            elif array[0][i] == "QN_3":
+                array[0][i] = "Qualität ff"
+            elif array[0][i] == "FX":
+                array[0][i] = "Max Wind"
+            elif array[0][i] == "QN_4":
+                array[0][i] = "Qualität ff"
+            elif array[0][i] == "SDK":
+                array[0][i] = "Sonnenst."
+            elif array[0][i] == "SHK_TAG":
+                array[0][i] = "Schneehöhe"
+            elif array[0][i] == "NM":
+                array[0][i] = "Bedeckung"
+            elif array[0][i] == "VPM":
+                array[0][i] = "Dampfdruck"
+            elif array[0][i] == "PM":
+                array[0][i] = "Luftdruck"
+            elif array[0][i] == "UPM":
+                array[0][i] = "Rel. Feuchte"
+            elif array[0][i] == "TXK":
+                array[0][i] = "Max Temp."
+            elif array[0][i] == "TNK":
+                array[0][i] = "Min Temp."
+            elif array[0][i] == "TGK":
+                array[0][i] = "Boden Min Temp."
 
-        df = pd.DataFrame(array)
-        df.to_csv(f_name, header=None, index=None)
+        for j in range(array.shape[0]):
+            if array[j][7] == "   0":
+                array[j][7] = "kein NS"
+            elif array[j][7] == "1":
+                array[j][7] = "Regen"
+            elif array[j][7] == "   4":
+                array[j][7] = "Form unbekannt"
+            elif array[j][7] == "   6":
+                array[j][7] = "Regen"
+            elif array[j][7] == "   7":
+                array[j][7] = "Schnee"
+            elif array[j][7] == "   8":
+                array[j][7] = "Schneeregen"
+            elif array[j][7] == "   9":
+                array[j][7] = "Nicht feststellbar"
 
+        for i in range(array.shape[0]):
+            for j in range(array.shape[1]):
+                if array[i][j] == "-999":
+                    array[i][j] = np.NaN
+
+        np.savetxt("result.csv", array.astype(np.str), fmt="%s", delimiter=";")
     def csvparser(self, f_name):
-        reader = csv.reader(open(f_name, "r"), delimiter=";")
-        x = list(reader)
-        result = np.array(x).astype(str)
+        return
 
-        """result = np.delete(result, 2, 1)
-        result = np.delete(result, 2, 1)
-        result = np.delete(result, 3, 1)
-        result = np.delete(result, 5, 1)
-        result = np.delete(result, 5, 1)
-        result = np.delete(result, 5, 1)
-        result = np.delete(result, 5, 1)
-        result = np.delete(result, 5, 1)
-        result = np.delete(result, 10, 1)
-        result = np.delete(result, 9, 1)
-        result = np.delete(result, 8, 1)
-        result = np.delete(result, 7, 1)
-        result = np.delete(result, 6, 1)
-
-        for i in range(result.shape[1]):
-            if result[0][i] == "  FM":
-                result[0][i] = "D-Windgeschw."
-            elif result[0][i] == " RSK":
-                result[0][i] = "NS-Menge"
-            elif result[0][i] == "RSKF":
-                result[0][i] = "NS-Art"
-            elif result[0][i] == " TMK":
-                result[0][i] = "D-Temp"
-
-        for i in range(result.shape[0]):
-            if result[i][2] == "-999":
-                result[i][2] = np.NAN
-
-        for j in range(result.shape[0]):
-            if result[j][4] == "   0":
-                result[j][4] = "kein NS"
-            elif result[j][4] == "1":
-                result[j][4] = "Regen"
-            elif result[j][4] == "   4":
-                result[j][4] = "Form unbekannt"
-            elif result[j][4] == "   6":
-                result[j][4] = "Regen"
-            elif result[j][4] == "   7":
-                result[j][4] = "Schnee"
-            elif result[j][4] == "   8":
-                result[j][4] = "Schneeregen"
-            elif result[j][4] == "   9":
-                result[j][4] = "Nicht feststellbar"
-"""
-        df = pd.DataFrame(result)
-        df.to_csv("result.csv", header=None, index=None)
 
 
 dwd = DWD()
