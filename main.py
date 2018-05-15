@@ -231,11 +231,11 @@ class DWD:
 
 
   def intoCSV(self, list, f_name):
-    array = [[]]
+    array = [range(1,20)]
 
-    for i in range(list.__sizeof__()):
+    for i in range(list.__len__()):
       stationd = list[i]
-      array = np.vstack((array, [stationd.stations_id, stationd.mess_datum, stationd.qn_3, stationd.fx, stationd.fm, stationd.qn_4, stationd.rsk, stationd.rskf, stationd.sdk, stationd.shk_tag, stationd.nm, stationd.vpm, stationd.pm, stationd.tmk, stationd.upm, stationd.txk, stationd.tnk, stationd.tgk, stationd.eor]))
+      array = np.vstack((array, [stationd.station_id, stationd.mess_datum, stationd.qn_3, stationd.fx, stationd.fm, stationd.qn_4, stationd.rsk, stationd.rskf, stationd.sdk, stationd.shk_tag, stationd.nm, stationd.vpm, stationd.pm, stationd.tmk, stationd.upm, stationd.txk, stationd.tnk, stationd.tgk, stationd.eor]))
 
 
     df = pd.DataFrame(array)
