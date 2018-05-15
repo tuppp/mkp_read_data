@@ -186,6 +186,7 @@ class DWD:
     try:
       urllib.request.urlretrieve(self.file_url + self.file_prefix + station_id + self.file_suffix, local_file + ".zip")
     except Exception:
+      print("->station data doesn't exist")
       return data
 
     zip_ref = zipfile.ZipFile(local_file + ".zip", 'r')
