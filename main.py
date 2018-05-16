@@ -9,7 +9,8 @@ from pprint import pprint
 import json
 import pandas as pd
 import numpy as np
-
+import re
+import sys
 
 class Station:
     id = None
@@ -21,7 +22,7 @@ class Station:
     name = None
     state = None
     zip_code = None
-    ALL_STATIONS = -5
+    ALL_STATIONS = sys.maxsize
 
     def __init__(self, id, recording_start, recording_end, height, latitude, longitude, name, state):
         self.id = id
@@ -33,10 +34,13 @@ class Station:
         self.name = name
         self.state = state
 
+    def set_zip_code(self, zip_code):
+      self.zip_code = zip_code
+
 
 class MeasuredData:
     station_name = None
-    station_plz = None
+    station_zip_code = None
 
     station_id = None
     mess_datum = None
@@ -58,21 +62,9 @@ class MeasuredData:
     tgk = None
     eor = None
 
-    def set_station_data(name, plz):
+    def set_station_data(self, name, zip_code):
         self.station_name = name
-        self.station_plz = plz
-
-    def get_plz_from_geo(lat, lng):
-        contents = urllib.request.urlopen(
-            "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + str(lat) + "," + str(lng) + "&sensor=false")
-        j = json.load(contents)
-        print("Das Json geloaded")
-        print(j)
-
-        print("\nDas Json geparst")
-        plz = j['results'][0]['address_components'][7]['long_name']
-        # print (plz)
-        return plz
+        self.station_zip_code = zip_code
 
     def __init__(self, stations_id, mess_datum, qn_3, fx, fm, qn_4, rsk, rskf, sdk, shk_tag, nm, vpm, pm, tmk, upm, txk,
                  tnk, tgk, eor):
@@ -104,7 +96,29 @@ class DWD:
     file_suffix = "_akt.zip"
     file_url = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/"
     station_list = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/KL_Tageswerte_Beschreibung_Stationen.txt"
-    fetch_start_date = 20180508
+
+
+    def get_zip_code_from_geo(self, lat, lng):
+        apikey = "AIzaSyBJ1HpXkBekg9Ek553aKSILi-d-q8RlFO8"
+
+        zip_code = None
+
+        contents = urllib.request.urlopen(
+            "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + str(lat) + "," + str(lng) + "&sensor=false&key=" + apikey)
+        j = json.load(contents)
+
+
+        
+        if j['status'] != "ZERO_RESULTS":
+          components = j['results'][0]['address_components']
+
+          for comp in components:
+            if comp['types'][0] == 'postal_code':
+              zip_code = comp['long_name']
+              break
+
+     
+        return zip_code
 
     def get_station_by_id(self, id, stations):
         for station in stations:
@@ -113,31 +127,36 @@ class DWD:
         return None
 
     # saves a list of cleaned weather data as csv
-    def get_weather_data(self, max_stations):
+    def get_weather_data(self, max_stations, file_name):
 
-        print("Get stations")
-        self.stations = dwd.get_stations()
+        print("\n## Get stations ##")
+        self.stations = dwd.get_stations(max_stations)
 
         station_data = []
 
-        i = 0
+
+        print("\n\n## Get weather data ##")
 
         for station in self.stations:
-            print("Get Data from Station " + station.id)
-            station_data.append(dwd.get_station_data(station.id, self.fetch_start_date))
-            i = i + 1;
+            print("fetch data from station: " + station.id, end='')
+            station_data.append(dwd.get_station_data(station))
 
-            if (max_stations >= 0 and i == max_stations):
-                break
+        print("-> weather data fetched <-")
 
-        print("Concatenate lists")
+        print("\n\n## Concatenate lists ##")
+        print("concatenate", end='')
         full_list = self.concatenate_lists(station_data)
-        print("->done")
+        print(" -> done")
 
-        print("Save csv")
-        self.intoCSV(full_list, "test.csv")
-        print("->saved")
 
+        print("\n\n## Safe CSV ##")
+        print("export", end='')
+        self.intoCSV(full_list, file_name)
+        print("-> done")
+        print("-> exported "  + str(len(full_list)) + " datasets from "+ str(len(self.stations)) + " stations <-")
+        
+
+        print("\n\n")
         return True
 
     #
@@ -148,34 +167,64 @@ class DWD:
             completelist += station
         return completelist
 
-    def get_stations(self):
+    def get_stations(self, max_stations):
+
+        station_count = 0
+
+        req = urllib.request.Request('ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/')
+        with urllib.request.urlopen(req) as response:
+          html = str(response.read())
+
+        active_stations = []
+
+        for item in html.split("_akt.zip"):
+          if "tageswerte_KL_" in item:
+            active_stations.append(item[ item.find("tageswerte_KL_")+len("tageswerte_KL_") : ])
+
+
         urllib.request.urlretrieve(self.station_list, "temp")
+
+
 
         with open("temp", 'r', encoding='cp1252') as f:
             lines = f.readlines()
 
             stations = []
 
+            
+
             for x in range(2, len(lines)):
+                print("Get Station " + str(x-1) + "/" + str(len(lines)-1), end='')
+
                 lines[x] = re.sub(' +', ';', lines[x])
                 line = lines[x].split(';')
 
                 new_station = Station(line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7])
-                stations.append(new_station)
+
+                if new_station.id in active_stations:
+                  print(" -> get zip code")
+                  new_station.set_zip_code(self.get_zip_code_from_geo(new_station.latitude, new_station.longitude))
+                  stations.append(new_station)
+                  station_count+=1
+                else:
+                  print(" -> invalid")
+
+                if(station_count >= max_stations):
+                  break
 
             os.remove("temp")
 
-            print("->stations fetched")
+            print("-> Found " + str(len(stations)) + " valid stations <-")
 
             return stations
 
-    def get_station_data(self, station_id, start_date):
-        local_file = "station_" + station_id
+    def get_station_data(self, station):
+        local_file = "station_" + station.id
 
         data = []
 
         try:
-            urllib.request.urlretrieve(self.file_url + self.file_prefix + station_id + self.file_suffix,
+            urllib.request.urlretrieve(self.file_url + self.file_prefix + station.id + self.file_suffix,
                                        local_file + ".zip")
         except Exception:
             print("->station data doesn't exist")
@@ -195,24 +244,24 @@ class DWD:
         with open(local_file + ".csv") as csvfile:
             readCSV = csv.reader(csvfile, delimiter=';')
             first_row = True
+            current_station = None
+
+            i = 0
             for row in readCSV:
-                if (first_row == False):
+              if i>=1:
+                current_data = MeasuredData(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8],
+                                            row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16],
+                                            row[17], row[18])
+                
 
-                    current_data = MeasuredData(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8],
-                                                row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16],
-                                                row[17], row[18])
-                    station = self.get_station_by_id(current_data.station_id, self.stations)
-                    if station != None:
-                        current_data.set_station_data(station.name, station.zip_code)
+                current_data.set_station_data(station.name, station.zip_code)
 
-                    data.append(current_data)
+                data.append(current_data)
+              i+=1
 
-
-                else:
-                    first_row = False
         os.remove(local_file + ".csv")
 
-        print("->data fetched")
+        print(" -> ok")
 
         return data
 
@@ -221,13 +270,13 @@ class DWD:
         return zip_code
 
     def intoCSV(self, list, f_name):
-        array = ["STATIONS_ID","MESS_DATUM","QN_3","FX","FM","QN_4","RSK","RSKF","SDK","SHK_TAG","NM","VPM","PM","TMK","UPM","TXK","TNK","TGK", "eor"]
+        array = ["STATION_ID", "STATION_NAME", "STATION_ZIP", "MESS_DATUM","QN_3","FX","FM","QN_4","RSK","RSKF","SDK","SHK_TAG","NM","VPM","PM","TMK","UPM","TXK","TNK","TGK", "eor"]
 
-        print(list.__sizeof__())
+        
         for i in range(list.__len__()):
             stationd = list[i]
             array = np.vstack((array,
-                              [stationd.station_id, stationd.mess_datum, stationd.qn_3, stationd.fx, stationd.fm,
+                              [stationd.station_id, stationd.station_name, stationd.station_zip_code, stationd.mess_datum, stationd.qn_3, stationd.fx, stationd.fm,
                                stationd.qn_4, stationd.rsk, stationd.rskf, stationd.sdk, stationd.shk_tag, stationd.nm,
                                stationd.vpm, stationd.pm, stationd.tmk, stationd.upm, stationd.txk, stationd.tnk,
                                stationd.tgk, stationd.eor]))
@@ -241,8 +290,14 @@ class DWD:
                 array[0][i] = "NS-Art"
             elif array[0][i] == "TMK":
                 array[0][i] = "D-Temp"
-            elif array[0][i] == "STATIONS_ID":
-                array[0][i] = "ID"
+            elif array[0][i] == "STATION_ID":
+                array[0][i] = "STATION_ID"
+
+            elif array[0][i] == "STATION_NAME":
+                array[0][i] = "STATION_NAME"
+
+            elif array[0][i] == "STATION_ZIP":
+                array[0][i] = "STATION_ZIP"
             elif array[0][i] == "QN_3":
                 array[0][i] = "Qualität ff"
             elif array[0][i] == "FX":
@@ -298,5 +353,5 @@ class DWD:
 
 
 dwd = DWD()
+dwd.get_weather_data(6, "result.csv"); # für alle: Station.ALL_STATIONS 
 
-dwd.get_weather_data(Station.ALL_STATIONS);
