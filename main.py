@@ -137,10 +137,6 @@ class DWD:
         self.intoCSV(full_list, "test.csv")
         print("->saved")
 
-        print("Parse csv")
-        self.csvparser("test.csv")
-        print("->parsed")
-
         return True
 
     #
@@ -298,9 +294,6 @@ class DWD:
 
         np.savetxt("result.csv", array.astype(np.str), fmt="%s", delimiter=";")
 
-
-    def csvparser(self, f_name):
-        return
 
 
 dwd = DWD()
