@@ -22,7 +22,6 @@ class Station:
     name = None
     state = None
     zip_code = None
-    ALL_STATIONS = sys.maxsize
 
     def __init__(self, id, recording_start, recording_end, height, latitude, longitude, name, state):
         self.id = id
@@ -209,7 +208,7 @@ class DWD:
                 else:
                   print(" -> invalid")
 
-                if(station_count >= max_stations):
+                if(max_stations != -1 and station_count >= max_stations):
                   break
 
             os.remove("temp")
@@ -348,10 +347,18 @@ class DWD:
                 if array[i][j].__str__().__contains__("-999"):
                     array[i][j] = np.NaN
 
-        np.savetxt("result.csv", array.astype(np.str), fmt="%s", delimiter=";")
+        np.savetxt(f_name, array.astype(np.str), fmt="%s", delimiter=";")
+
 
 
 
 dwd = DWD()
-dwd.get_weather_data(6, "result.csv"); # für alle: Station.ALL_STATIONS 
+
+print("\n\nFetch data from DWD")
+print("-----------------------")
+stations = input('max. number of stations (all: -1): ')
+file_name = input('output file: ')
+
+
+dwd.get_weather_data(int(stations), file_name); # für alle: -1
 
