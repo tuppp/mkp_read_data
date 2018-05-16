@@ -21,6 +21,7 @@ class Station:
     name = None
     state = None
     zip_code = None
+    ALL_STATIONS = -5
 
     def __init__(self, id, recording_start, recording_end, height, latitude, longitude, name, state):
         self.id = id
@@ -112,7 +113,7 @@ class DWD:
         return None
 
     # saves a list of cleaned weather data as csv
-    def get_weather_data(self):
+    def get_weather_data(self, max_stations):
 
         print("Get stations")
         self.stations = dwd.get_stations()
@@ -126,7 +127,7 @@ class DWD:
             station_data.append(dwd.get_station_data(station.id, self.fetch_start_date))
             i = i + 1;
 
-            if (i == 10):
+            if (max_stations >= 0 and i == max_stations):
                 break
 
         print("Concatenate lists")
@@ -298,4 +299,4 @@ class DWD:
 
 dwd = DWD()
 
-dwd.get_weather_data();
+dwd.get_weather_data(Station.ALL_STATIONS);
