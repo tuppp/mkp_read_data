@@ -224,17 +224,17 @@ class DWD:
         return zip_code
 
     def intoCSV(self, list, f_name):
-        array = [["STATIONS_ID;"],["MESS_DATUM;"],["QN_3;"],["FX"],["FM"],["QN_4"],["RSK"],["RSKF"],["SDK"],["SHK_TAG"],["NM"],["VPM"],["PM"],["TMK"],["UPM"],["TXK"],["TNK"],["TGK"],[ "eor"]]
+        array = ["STATIONS_ID","MESS_DATUM","QN_3","FX","FM","QN_4","RSK","RSKF","SDK","SHK_TAG","NM","VPM","PM","TMK","UPM","TXK","TNK","TGK", "eor"]
 
         print(list.__sizeof__())
         for i in range(list.__len__()):
             stationd = list[i]
             array = np.vstack((array,
-                              [[stationd.station_id], [stationd.mess_datum], [stationd.qn_3], [stationd.fx], [stationd.fm],
-                               [stationd.qn_4], [stationd.rsk], [stationd.rskf], [stationd.sdk], [stationd.shk_tag], [stationd.nm],
-                               [stationd.vpm], [stationd.pm], [stationd.tmk], [stationd.upm], [stationd.txk], [stationd.tnk],
-                               [stationd.tgk], [stationd.eor]]))
-                               
+                              [stationd.station_id, stationd.mess_datum, stationd.qn_3, stationd.fx, stationd.fm,
+                               stationd.qn_4, stationd.rsk, stationd.rskf, stationd.sdk, stationd.shk_tag, stationd.nm,
+                               stationd.vpm, stationd.pm, stationd.tmk, stationd.upm, stationd.txk, stationd.tnk,
+                               stationd.tgk, stationd.eor]))
+
         for i in range(array.shape[1]):
             if array[0][i] == "FM":
                 array[0][i] = "D-Windgeschw."
@@ -289,13 +289,18 @@ class DWD:
 
         for i in range(array.shape[0]):
             for j in range(array.shape[1]):
-                if array[i][j] == "-999":
+                array[i][j].__str__()
+
+        for i in range(array.shape[0]):
+            for j in range(array.shape[1]):
+                if array[i][j].__str__().__contains__("-999"):
                     array[i][j] = np.NaN
 
         np.savetxt("result.csv", array.astype(np.str), fmt="%s", delimiter=";")
+
+
     def csvparser(self, f_name):
         return
-
 
 
 dwd = DWD()
