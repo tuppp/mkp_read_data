@@ -11,6 +11,10 @@ import pandas as pd
 import numpy as np
 import re
 import sys
+import time
+
+current_milli_time = lambda: int(round(time.time() * 1000))
+
 
 class Station:
     id = None
@@ -69,7 +73,7 @@ class MeasuredData:
                  tnk, tgk, eor):
         self.station_id = stations_id
         self.mess_datum = mess_datum
-        self.qn_3
+        self.qn_3 = qn_3
         self.fx = fx
         self.fm = fm
         self.qn_4 = qn_4
@@ -90,6 +94,8 @@ class MeasuredData:
 
 class DWD:
     stations = None;
+
+    NULL_TYPE = np.NaN;
 
     file_prefix = "tageswerte_KL_"
     file_suffix = "_akt.zip"
@@ -128,32 +134,49 @@ class DWD:
     # saves a list of cleaned weather data as csv
     def get_weather_data(self, max_stations, file_name):
 
+        start_time_glob = current_milli_time()
+
         print("\n## Get stations ##")
+        start_time = current_milli_time()
         self.stations = dwd.get_stations(max_stations)
+        print("[runtime: " + str(current_milli_time()-start_time) + " ms]")
 
-        station_data = []
 
-
+       
         print("\n\n## Get weather data ##")
+        station_data = []
+        start_time = current_milli_time()
 
         for station in self.stations:
             print("fetch data from station: " + station.id, end='')
             station_data.append(dwd.get_station_data(station))
 
         print("-> weather data fetched <-")
+        print("[runtime: " + str(current_milli_time()-start_time) + " ms]")
 
         print("\n\n## Concatenate lists ##")
+        start_time = current_milli_time()
+
         print("concatenate", end='')
+
         full_list = self.concatenate_lists(station_data)
         print(" -> done")
+        print("[runtime: " + str(current_milli_time()-start_time) + " ms]")
 
 
         print("\n\n## Safe CSV ##")
+        start_time = current_milli_time()
+
         print("export", end='')
         self.intoCSV(full_list, file_name)
         print("-> done")
+        print("[runtime: " + str(current_milli_time()-start_time) + " ms]")
+
         print("-> exported "  + str(len(full_list)) + " datasets from "+ str(len(self.stations)) + " stations <-")
         
+        print("\n\n")
+
+        print("[complete runtime: " + str(current_milli_time()-start_time_glob) + " ms]")
 
         print("\n\n")
         return True
@@ -248,6 +271,7 @@ class DWD:
             i = 0
             for row in readCSV:
               if i>=1:
+                row = self.parse(row);
                 current_data = MeasuredData(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8],
                                             row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16],
                                             row[17], row[18])
@@ -264,93 +288,51 @@ class DWD:
 
         return data
 
+
+
     def get_zip_code(lat, lon):
         zip_code = 0
         return zip_code
 
-    def intoCSV(self, list, f_name):
-        array = ["STATION_ID", "STATION_NAME", "STATION_ZIP", "MESS_DATUM","QN_3","FX","FM","QN_4","RSK","RSKF","SDK","SHK_TAG","NM","VPM","PM","TMK","UPM","TXK","TNK","TGK", "eor"]
+
+
+    def intoCSV(self,list, f_name):
+      file = open(f_name, 'w') 
+
+      file.write("STATION_ID;STATION_NAME;STATION_ZIP;MESS_DATUM;Qualität ff;Max Wind;D-Windgeschw.;Qualität ff;NS-Menge;NS-Art;Sonnenst.;Schneehöhe;Bedeckung;Dampfdruck;Luftdruck;D-Temp;Rel. Feuchte;Max Temp.;Min Temp.;Boden Min Temp.;eor" + "\n")
+
+      for i in range(len(list)):
+        file.write(str(list[i].station_id) + ';' + str(list[i].station_name) + ';' + str(list[i].station_zip_code) + ';' + str(list[i].mess_datum) + ';' + str(list[i].qn_3) + ';' + str(list[i].fx) + ';' + str(list[i].fm) + ';' + str(list[i].qn_4) + ';' + str(list[i].rsk) + ';' + str(list[i].rskf) + ';' + str(list[i].sdk) + ';' + str(list[i].shk_tag) + ';' + str(list[i].nm) + ';' + str(list[i].vpm) + ';' + str(list[i].pm) + ';' + str(list[i].tmk) + ';' + str(list[i].upm) + ';' + str(list[i].txk) + ';' + str(list[i].tnk) + ';' +str(list[i].tgk) + ';' + str(list[i].eor) + "\n") 
+      
+      file.close() 
+
+
+    def parse(self, row):
+
+      for i in range(len(row)):
+        row[i] = row[i].strip()
+        
+        if row[i] == "-999":
+          row[i] = self.NULL_TYPE
+
+      if row[7] == "0":
+          row[7] = "kein NS"
+      elif row[7] == "1":
+          row[7] = "Regen"
+      elif row[7] == "4":
+          row[7] = "Form unbekannt"
+      elif row[7] == "6":
+          row[7] = "Regen"
+      elif row[7] == "7":
+          row[7] = "Schnee"
+      elif row[7] == "8":
+          row[7] = "Schneeregen"
+      elif row[7] == "9":
+          row[7] = "Nicht feststellbar"
+
+      return row
 
         
-        for i in range(list.__len__()):
-            stationd = list[i]
-            array = np.vstack((array,
-                              [stationd.station_id, stationd.station_name, stationd.station_zip_code, stationd.mess_datum, stationd.qn_3, stationd.fx, stationd.fm,
-                               stationd.qn_4, stationd.rsk, stationd.rskf, stationd.sdk, stationd.shk_tag, stationd.nm,
-                               stationd.vpm, stationd.pm, stationd.tmk, stationd.upm, stationd.txk, stationd.tnk,
-                               stationd.tgk, stationd.eor]))
-
-        for i in range(array.shape[1]):
-            if array[0][i] == "FM":
-                array[0][i] = "D-Windgeschw."
-            elif array[0][i] == "RSK":
-                array[0][i] = "NS-Menge"
-            elif array[0][i] == "RSKF":
-                array[0][i] = "NS-Art"
-            elif array[0][i] == "TMK":
-                array[0][i] = "D-Temp"
-            elif array[0][i] == "STATION_ID":
-                array[0][i] = "STATION_ID"
-
-            elif array[0][i] == "STATION_NAME":
-                array[0][i] = "STATION_NAME"
-
-            elif array[0][i] == "STATION_ZIP":
-                array[0][i] = "STATION_ZIP"
-            elif array[0][i] == "QN_3":
-                array[0][i] = "Qualität ff"
-            elif array[0][i] == "FX":
-                array[0][i] = "Max Wind"
-            elif array[0][i] == "QN_4":
-                array[0][i] = "Qualität ff"
-            elif array[0][i] == "SDK":
-                array[0][i] = "Sonnenst."
-            elif array[0][i] == "SHK_TAG":
-                array[0][i] = "Schneehöhe"
-            elif array[0][i] == "NM":
-                array[0][i] = "Bedeckung"
-            elif array[0][i] == "VPM":
-                array[0][i] = "Dampfdruck"
-            elif array[0][i] == "PM":
-                array[0][i] = "Luftdruck"
-            elif array[0][i] == "UPM":
-                array[0][i] = "Rel. Feuchte"
-            elif array[0][i] == "TXK":
-                array[0][i] = "Max Temp."
-            elif array[0][i] == "TNK":
-                array[0][i] = "Min Temp."
-            elif array[0][i] == "TGK":
-                array[0][i] = "Boden Min Temp."
-
-        for j in range(array.shape[0]):
-            if array[j][7] == "   0":
-                array[j][7] = "kein NS"
-            elif array[j][7] == "1":
-                array[j][7] = "Regen"
-            elif array[j][7] == "   4":
-                array[j][7] = "Form unbekannt"
-            elif array[j][7] == "   6":
-                array[j][7] = "Regen"
-            elif array[j][7] == "   7":
-                array[j][7] = "Schnee"
-            elif array[j][7] == "   8":
-                array[j][7] = "Schneeregen"
-            elif array[j][7] == "   9":
-                array[j][7] = "Nicht feststellbar"
-
-        for i in range(array.shape[0]):
-            for j in range(array.shape[1]):
-                array[i][j].__str__()
-
-        for i in range(array.shape[0]):
-            for j in range(array.shape[1]):
-                if array[i][j].__str__().__contains__("-999"):
-                    array[i][j] = np.NaN
-
-        np.savetxt(f_name, array.astype(np.str), fmt="%s", delimiter=";")
-
-
-
 
 dwd = DWD()
 
