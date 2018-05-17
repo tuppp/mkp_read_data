@@ -12,6 +12,7 @@ import numpy as np
 import re
 import sys
 import time
+from threading import Lock, Thread
 
 current_milli_time = lambda: int(round(time.time() * 1000))
 
@@ -93,9 +94,14 @@ class MeasuredData:
 
 
 class DWD:
-    stations = None;
+    stations = []
 
-    NULL_TYPE = np.NaN;
+    NULL_TYPE = np.NaN
+
+    thread_count = 10
+    station_count = 0
+    lock = Lock()
+    runs=0
 
     file_prefix = "tageswerte_KL_"
     file_suffix = "_akt.zip"
@@ -147,9 +153,34 @@ class DWD:
         station_data = []
         start_time = current_milli_time()
 
-        for station in self.stations:
-            print("fetch data from station: " + station.id, end='')
-            station_data.append(dwd.get_station_data(station))
+
+        interval_len = int(len(self.stations)/self.thread_count)
+
+        threads = [];
+
+        for i in range(self.thread_count):
+          if i == self.thread_count-1:
+            end = len(self.stations)-1
+          else:
+            end = (1+i)*interval_len
+
+          new_thread = Thread(target=self.get_station_data_from, args=(station_data, i*interval_len, end))
+          threads.append(new_thread)
+          new_thread.start()
+
+
+        for i in range(self.thread_count):
+          threads[i].join()
+
+
+
+
+
+        #for station in self.stations:
+        #    station_data.append(dwd.get_station_data(station))
+
+
+
 
         print("-> weather data fetched <-")
         print("[runtime: " + str(current_milli_time()-start_time) + " ms]")
@@ -183,6 +214,49 @@ class DWD:
 
     #
 
+
+    def get_stations_from(self,lines, active_stations,max_stations, start, end):
+
+      #index ab 2!!!!
+
+      for x in range(start, end):
+
+        if x==0 or x==1:
+          continue
+
+
+        line = re.sub(' +', ';', lines[x])
+
+        line = line.split(';')
+
+        new_station = Station(line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7])
+
+        print("Get Station " + new_station.id, end='')
+        
+        if new_station.id in active_stations:         
+          print(" -> get zip code")
+          new_station.set_zip_code(self.get_zip_code_from_geo(new_station.latitude, new_station.longitude))
+
+          self.lock.acquire()
+          if(max_stations != -1 and self.station_count >= max_stations):
+            self.lock.release()
+            break
+          self.stations.append(new_station)
+          self.station_count+=1
+          self.lock.release()
+          
+
+        else:
+          print(" -> invalid")
+
+
+
+
+    def get_station_data_from(self, station_data, start, end):
+      for i in range(start, end):
+        station_data.append(dwd.get_station_data(self.stations[i]))
+
+
     def concatenate_lists(self, station_data):
         completelist = []
         for station in station_data:
@@ -190,8 +264,6 @@ class DWD:
         return completelist
 
     def get_stations(self, max_stations):
-
-        station_count = 0
 
         req = urllib.request.Request('ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/')
         with urllib.request.urlopen(req) as response:
@@ -213,34 +285,34 @@ class DWD:
 
             stations = []
 
-            
+            interval_len = int(len(lines)/self.thread_count)
 
-            for x in range(2, len(lines)):
-                print("Get Station " + str(x-1) + "/" + str(len(lines)-1), end='')
+            threads = [];
 
-                lines[x] = re.sub(' +', ';', lines[x])
-                line = lines[x].split(';')
+            for i in range(self.thread_count):
+              if i == self.thread_count-1:
+                end = len(lines)-1
+              else:
+                end = (1+i)*interval_len
 
-                new_station = Station(line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7])
+              print("from " + str(i*interval_len) + " to " + str(end))
 
-                if new_station.id in active_stations:
-                  print(" -> get zip code")
-                  new_station.set_zip_code(self.get_zip_code_from_geo(new_station.latitude, new_station.longitude))
-                  stations.append(new_station)
-                  station_count+=1
-                else:
-                  print(" -> invalid")
+              new_thread = Thread(target=self.get_stations_from, args=(lines,active_stations,max_stations, i*interval_len, end))
+              threads.append(new_thread)
+              new_thread.start()
 
-                if(max_stations != -1 and station_count >= max_stations):
-                  break
+
+            for i in range(self.thread_count):
+              threads[i].join()
 
             os.remove("temp")
 
-            print("-> Found " + str(len(stations)) + " valid stations <-")
+            print("-> Found " + str(len(self.stations)) + " valid stations <-")
 
-            return stations
+            return self.stations
 
     def get_station_data(self, station):
+        print("fetch data from station: " + station.id, end='')
         local_file = "station_" + station.id
 
         data = []
@@ -340,6 +412,7 @@ print("\n\nFetch data from DWD")
 print("-----------------------")
 stations = input('max. number of stations (all: -1): ')
 file_name = input('output file: ')
+dwd.thread_count = int(input('threads: '))
 
 
 dwd.get_weather_data(int(stations), file_name); # für alle: -1
