@@ -10,6 +10,11 @@ Die Daten werden von: ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/
 1: AIzaSyBJ1HpXkBekg9Ek553aKSILi-d-q8RlFO8
 2: AIzaSyAojtE1GHYx1HvXSaMuK98RkeboisXL954
 
+## API Keys
+1: AIzaSyBJ1HpXkBekg9Ek553aKSILi-d-q8RlFO8
+2: AIzaSyAojtE1GHYx1HvXSaMuK98RkeboisXL954
+
+
 ### Prerequisites
 
 Es wird lediglich Python3 und Pandas benötigt
