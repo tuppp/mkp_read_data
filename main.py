@@ -250,11 +250,10 @@ class DWD:
             print(" -> get zip code", end='\r')
             zipc = self.get_zip_code_from_geo(new_station.latitude, new_station.longitude, apikeylist[keyindex]);
 
-            while(zipc == -2):
+            while(zipc == -2 and keyindex < len(apikeylist)-1):
                 keyindex+=1
                 zipc = self.get_zip_code_from_geo(new_station.latitude, new_station.longitude, apikeylist[keyindex]);
-                if(keyindex >= len(apikeylist)):
-                    break
+                
           
             if zipc == -2:
                 print("-> error: query limit for all keys reached")
