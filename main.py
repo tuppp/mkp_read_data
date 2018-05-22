@@ -109,8 +109,7 @@ class DWD:
     station_list = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/KL_Tageswerte_Beschreibung_Stationen.txt"
 
 
-    def get_zip_code_from_geo(self, lat, lng):
-        apikey = "AIzaSyAojtE1GHYx1HvXSaMuK98RkeboisXL954"
+    def get_zip_code_from_geo(self, lat, lng, apikey):
 
         zip_code = None
 
@@ -247,38 +246,39 @@ class DWD:
         print("Get Station " + new_station.id, end='')
         
         if new_station.id in active_stations:         
-          print(" -> get zip code")
-          zipc = self.get_zip_code_from_geo(new_station.latitude, new_station.longitude);
+            print(" -> get zip code")
+            zipc = self.get_zip_code_from_geo(new_station.latitude, new_station.longitude, apikeylist[keyindex]);
 
-          while(zipc == -2):
-           print('new key')   
-           keyindex+=1
-           zipc = self.get_zip_code_from_geo(new_station.latitude, new_station.longitude, apikeylist[keyindex]);
-           if(keyindex >= len(apikeylist)):
-               print("-> error: query limit for all keys reached")
-               break
-           
-          if(zipc != -2):
-               new_station.set_zip_code(zipc)
-               print(" -> ok")
-   
-
-          if max_stations != -1:
-            self.lock.acquire()
-
-          if(max_stations != -1 and self.station_count >= max_stations):
-            self.lock.release()
-            break
-
-          self.stations.append(new_station)
-          self.station_count+=1
-
-          if max_stations != -1:
-            self.lock.release()
+            while(zipc == -2):
+                keyindex+=1
+                zipc = self.get_zip_code_from_geo(new_station.latitude, new_station.longitude, apikeylist[keyindex]);
+                if(keyindex >= len(apikeylist)):
+                    break
           
+            if zipc == -2:
+                print("-> error: query limit for all keys reached")
+            elif zipc == -3:
+                print(" -> something went wrong")
+            else:
+                new_station.set_zip_code(zipc)
+                print(" -> ok")
+   
+            
+            if max_stations != -1:
+                self.lock.acquire()
 
+            if(max_stations != -1 and self.station_count >= max_stations):
+                self.lock.release()
+                break
+
+            self.stations.append(new_station)
+            self.station_count+=1
+
+            if max_stations != -1:
+                self.lock.release()
+          
         else:
-          print(" -> invalid")
+            print(" -> invalid")
 
 
 
