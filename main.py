@@ -239,7 +239,7 @@ class DWD:
         print("Get Station " + new_station.id, end='')
         
         if new_station.id in active_stations:         
-          print(" -> get zip code" , end='')
+          print(" -> get zip code")
           zipc = self.get_zip_code_from_geo(new_station.latitude, new_station.longitude);
 
           if zipc == -2:
@@ -328,7 +328,7 @@ class DWD:
             return self.stations
 
     def get_station_data(self, station):
-        print("fetch data from station: " + station.id, end='')
+        print("fetch data from station: " + station.id)
         local_file = "station_" + station.id
 
         data = []
@@ -426,8 +426,14 @@ dwd = DWD()
 
 print("\n\nFetch data from DWD")
 print("-----------------------")
-stations = input('max. number of stations (all: -1): ')
+stations = input('fetch (all | debug): ')
 file_name = input('output file: ')
 dwd.thread_count = int(input('threads: '))
+
+if stations == 'all':
+  stations = -1;
+else:
+  stations = 10;
+
 
 dwd.get_weather_data(int(stations), file_name) # für alle: -1
