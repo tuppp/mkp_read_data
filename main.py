@@ -228,8 +228,11 @@ class DWD:
     def get_stations_from(self,lines, active_stations,max_stations, start, end):
 
       #index ab 2!!!!
+     apikeylist = ["AIzaSyBJ1HpXkBekg9Ek553aKSILi-d-q8RlFO8", 
+                     "AIzaSyDOu4NU_6awk4X08-JmN7yx70U-JclaRic"]
+     keyindex = 0
 
-      for x in range(start, end):
+     for x in range(start, end):
 
         if x==0 or x==1:
           continue
@@ -247,13 +250,18 @@ class DWD:
           print(" -> get zip code")
           zipc = self.get_zip_code_from_geo(new_station.latitude, new_station.longitude);
 
-          if zipc == -2:
-            print(" -> error: query limit")
-          elif zipc == -3:
-            print(" -> something went wrong")
-          else:
-            new_station.set_zip_code(zipc)
-            print(" -> ok")
+          while(zipc == -2):
+           print('new key')   
+           keyindex+=1
+           zipc = self.get_zip_code_from_geo(new_station.latitude, new_station.longitude, apikeylist[keyindex]);
+           if(keyindex >= len(apikeylist)):
+               print("-> error: query limit for all keys reached")
+               break
+           
+          if(zipc != -2):
+               new_station.set_zip_code(zipc)
+               print(" -> ok")
+   
 
           if max_stations != -1:
             self.lock.acquire()
