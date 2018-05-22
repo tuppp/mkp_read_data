@@ -110,7 +110,7 @@ class DWD:
 
 
     def get_zip_code_from_geo(self, lat, lng):
-        apikey = "AIzaSyBJ1HpXkBekg9Ek553aKSILi-d-q8RlFO8"
+        apikey = "AIzaSyAojtE1GHYx1HvXSaMuK98RkeboisXL954"
 
         zip_code = None
 
@@ -121,6 +121,11 @@ class DWD:
 
         if j['status'] == "OVER_QUERY_LIMIT":
           return -2
+
+
+
+        if  len(j['results']) ==0:
+          return -3
 
         
         if j['status'] != "ZERO_RESULTS":
@@ -244,6 +249,8 @@ class DWD:
 
           if zipc == -2:
             print(" -> error: query limit")
+          elif zipc == -3:
+            print(" -> something went wrong")
           else:
             new_station.set_zip_code(zipc)
             print(" -> ok")
