@@ -228,7 +228,8 @@ class DWD:
 
       #index ab 2!!!!
      apikeylist = ["AIzaSyBJ1HpXkBekg9Ek553aKSILi-d-q8RlFO8",
-                     "AIzaSyDOu4NU_6awk4X08-JmN7yx70U-JclaRic"]
+                     "AIzaSyDOu4NU_6awk4X08-JmN7yx70U-JclaRic",
+                     "AIzaSyAojtE1GHYx1HvXSaMuK98RkeboisXL954", "lol"]
      keyindex = 0
 
      for x in range(start, end):
