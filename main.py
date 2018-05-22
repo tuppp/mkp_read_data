@@ -119,9 +119,14 @@ class DWD:
         j = json.load(contents)
 
 
+        if j['status'] == "OVER_QUERY_LIMIT":
+          return -2
+
         
         if j['status'] != "ZERO_RESULTS":
           components = j['results'][0]['address_components']
+
+        
 
           for comp in components:
             if comp['types'][0] == 'postal_code':
@@ -210,7 +215,7 @@ class DWD:
         print("[complete runtime: " + str(current_milli_time()-start_time_glob) + " ms]")
 
         print("\n\n")
-        return True
+        return current_milli_time()-start_time_glob
 
     #
 
@@ -234,16 +239,27 @@ class DWD:
         print("Get Station " + new_station.id, end='')
         
         if new_station.id in active_stations:         
-          print(" -> get zip code")
-          new_station.set_zip_code(self.get_zip_code_from_geo(new_station.latitude, new_station.longitude))
+          print(" -> get zip code" , end='')
+          zipc = self.get_zip_code_from_geo(new_station.latitude, new_station.longitude);
 
-          self.lock.acquire()
+          if zipc == -2:
+            print(" -> error: query limit")
+          else:
+            new_station.set_zip_code(zipc)
+            print(" -> ok")
+
+          if max_stations != -1:
+            self.lock.acquire()
+
           if(max_stations != -1 and self.station_count >= max_stations):
             self.lock.release()
             break
+
           self.stations.append(new_station)
           self.station_count+=1
-          self.lock.release()
+
+          if max_stations != -1:
+            self.lock.release()
           
 
         else:
@@ -414,6 +430,4 @@ stations = input('max. number of stations (all: -1): ')
 file_name = input('output file: ')
 dwd.thread_count = int(input('threads: '))
 
-
-dwd.get_weather_data(int(stations), file_name); # für alle: -1
-
+dwd.get_weather_data(int(stations), file_name) # für alle: -1
