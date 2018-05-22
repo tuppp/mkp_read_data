@@ -244,10 +244,10 @@ class DWD:
 
         new_station = Station(line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7])
 
-        print("Get Station " + new_station.id, end='')
+        print("Get Station " + new_station.id, end='\r')
         
         if new_station.id in active_stations:         
-            print(" -> get zip code")
+            print(" -> get zip code", end='\r')
             zipc = self.get_zip_code_from_geo(new_station.latitude, new_station.longitude, apikeylist[keyindex]);
 
             while(zipc == -2):
@@ -262,7 +262,7 @@ class DWD:
                 print(" -> something went wrong")
             else:
                 new_station.set_zip_code(zipc)
-                print(" -> ok")
+                print(" -> ok", end='\r')
    
             
             if max_stations != -1:
@@ -279,7 +279,7 @@ class DWD:
                 self.lock.release()
           
         else:
-            print(" -> invalid")
+            print(" -> invalid", end='\r')
 
 
 
@@ -327,8 +327,6 @@ class DWD:
               else:
                 end = (1+i)*interval_len
 
-              print("from " + str(i*interval_len) + " to " + str(end))
-
               new_thread = Thread(target=self.get_stations_from, args=(lines,active_stations,max_stations, i*interval_len, end))
               threads.append(new_thread)
               new_thread.start()
@@ -344,7 +342,7 @@ class DWD:
             return self.stations
 
     def get_station_data(self, station):
-        print("fetch data from station: " + station.id)
+        print("fetch data from station: " + station.id, end='\r')
         local_file = "station_" + station.id
 
         data = []
@@ -388,7 +386,7 @@ class DWD:
 
         os.remove(local_file + ".csv")
 
-        print(" -> ok")
+        print(" -> ok", end='\r')
 
         return data
 
