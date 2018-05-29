@@ -325,6 +325,7 @@ class DWD:
     def get_station_data(self, station):
         print("fetch data from station: " + station.id, end='\r')
         local_file = "station_" + station.id
+        local_file_historical = "station_" + station.id
 
         data = []
 
@@ -334,7 +335,7 @@ class DWD:
                                        local_file + ".zip")
             # Name der Historical-Files: tageswerte_KL_00001_19370101_19860630_hist.zip
             urllib.request.urlretrieve(self.file_url_historical + self.file_prefix + station.id + recording_start + "_" + recording_end + self.file_suffix_historical,
-                                       local_file + ".zip")
+                                       local_file_historical + ".zip")
         except Exception:
             print("->station data doesn't exist")
             return data
@@ -344,11 +345,22 @@ class DWD:
         zip_ref.close()
         os.remove(local_file + ".zip")
 
+        zip_ref2 = zipfile.ZipFile(local_file_historical + ".zip", 'r')
+        zip_ref2.extractall(local_file_historical)
+        zip_ref2.close()
+        os.remove(local_file_historical + ".zip")
+
         for file in os.listdir(local_file):
             if fnmatch.fnmatch(file, "produkt_klima_tag*"):
                 os.rename(local_file + "/" + file, local_file + ".csv")
 
         shutil.rmtree(local_file)
+
+        for file in os.listdir(local_file_historical):
+            if fnmatch.fnmatch(file, "produkt_klima_tag*"):
+                os.rename(local_file_historical + "/" + file, local_file_historical + ".csv")
+
+        shutil.rmtree(local_file_historical)
 
         with open(local_file + ".csv") as csvfile:
             readCSV = csv.reader(csvfile, delimiter=';')
