@@ -390,6 +390,7 @@ class DWD:
 
         data = []
 
+        print(station.recording_mid )
        
  			  # Name der Recent-Files: tageswerte_KL_00044_akt.zip
         urllib.request.urlretrieve(self.file_url + self.file_prefix + station.id + self.file_suffix,
@@ -444,8 +445,8 @@ class DWD:
                 data.append(current_data)
               i+=1
 
-         with open(local_file_historical + ".csv") as csvfile:
-           readCSV = csv.reader(csvfile, delimiter=';')
+        with open(local_file_historical + ".csv") as csvfile:
+            readCSV = csv.reader(csvfile, delimiter=';')
             first_row = True
             current_station = None
 
