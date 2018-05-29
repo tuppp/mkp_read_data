@@ -113,32 +113,32 @@ class DWD:
 
         zip_code = None
 
-        contents = urllib.request.urlopen(
-            "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + str(lat) + "," + str(lng) + "&sensor=false&key=" + apikey)
-        j = json.load(contents)
+       ## contents = urllib.request.urlopen(
+         ##   "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + str(lat) + "," + str(lng) + "&sensor=false&key=" + apikey)
+        ## j = json.load(contents)
 
 
-        if j['status'] == "OVER_QUERY_LIMIT":
-          return -2
+        ##if j['status'] == "OVER_QUERY_LIMIT":
+          ##return -2
 
 
 
-        if  len(j['results']) ==0:
-          return -3
-
-        
-        if j['status'] != "ZERO_RESULTS":
-          components = j['results'][0]['address_components']
+       ## if  len(j['results']) ==0:
+         ## return -3
 
         
+        ##if j['status'] != "ZERO_RESULTS":
+          ##components = j['results'][0]['address_components']
 
-          for comp in components:
-            if comp['types'][0] == 'postal_code':
-              zip_code = comp['long_name']
-              break
+        
+
+          ##for comp in components:
+            ##if comp['types'][0] == 'postal_code':
+              ##zip_code = comp['long_name']
+              ##break
 
      
-        return zip_code
+        return -1
 
     def get_station_by_id(self, id, stations):
         for station in stations:
