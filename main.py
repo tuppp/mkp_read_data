@@ -96,7 +96,7 @@ class MeasuredData:
 
 class DWD:
     stations = []
-
+    zip_flag = 0
     NULL_TYPE = np.NaN
 
     thread_count = 10
@@ -114,29 +114,29 @@ class DWD:
 
         zip_code = None
 
-       ## contents = urllib.request.urlopen(
-         ##   "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + str(lat) + "," + str(lng) + "&sensor=false&key=" + apikey)
-        ## j = json.load(contents)
+        contents = urllib.request.urlopen(
+            "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + str(lat) + "," + str(lng) + "&sensor=false&key=" + apikey)
+        j = json.load(contents)
 
 
-        ##if j['status'] == "OVER_QUERY_LIMIT":
-          ##return -2
+        if j['status'] == "OVER_QUERY_LIMIT":
+          return -2
 
 
 
-       ## if  len(j['results']) ==0:
-         ## return -3
-
-        
-        ##if j['status'] != "ZERO_RESULTS":
-          ##components = j['results'][0]['address_components']
+        if  len(j['results']) ==0:
+          return -3
 
         
+        if j['status'] != "ZERO_RESULTS":
+          components = j['results'][0]['address_components']
 
-          ##for comp in components:
-            ##if comp['types'][0] == 'postal_code':
-              ##zip_code = comp['long_name']
-              ##break
+        
+
+          for comp in components:
+            if comp['types'][0] == 'postal_code':
+              zip_code = comp['long_name']
+              break
 
      
         return -1
@@ -148,8 +148,8 @@ class DWD:
         return None
 
     # saves a list of cleaned weather data as csv
-    def get_weather_data(self, file_name):
-
+    def get_weather_data(self, file_name, zip_flag):
+        self.zip_flag = zip_flag
         start_time_glob = current_milli_time()
 
         print("\n## Get stations ##")
@@ -240,20 +240,20 @@ class DWD:
 
         print("Get Station " + new_station.id, end='\r')
         
-        if new_station.id in active_stations:         
-            zipc = self.get_zip_code_from_geo(new_station.latitude, new_station.longitude, apikeylist[keyindex]);
-
-            while(zipc == -2 and keyindex < len(apikeylist)-1):
-                keyindex+=1
+        if new_station.id in active_stations :         
+            if self.zip_flag == 1:
                 zipc = self.get_zip_code_from_geo(new_station.latitude, new_station.longitude, apikeylist[keyindex]);
-                
-          
-            if zipc == -2:
-                print("-> error: query limit for all keys reached")
-            elif zipc == -3:
-                print(" -> something went wrong")
-            else:
-                new_station.set_zip_code(zipc)
+
+                while(zipc == -2 and keyindex < len(apikeylist)-1):
+                    keyindex+=1
+                    zipc = self.get_zip_code_from_geo(new_station.latitude, new_station.longitude, apikeylist[keyindex]);
+            
+                if zipc == -2:
+                    print("-> error: query limit for all keys reached")
+                elif zipc == -3:
+                    print(" -> something went wrong")
+                else:
+                    new_station.set_zip_code(zipc)
    
             
             self.stations.append(new_station)
@@ -418,7 +418,12 @@ print("\n\nFetch data from DWD")
 print("-----------------------")
 file_name = input('output file: ')
 dwd.thread_count = int(input('threads: '))
+zip_flag = input('zipcodes (yes | no): ')
+
+if zip_flag == 'yes':
+    zip_flag = 1
+else:
+    zip_flag = 0
 
 
-
-dwd.get_weather_data(file_name) # für alle: -1
+dwd.get_weather_data(file_name, zip_flag) # für alle: -1
