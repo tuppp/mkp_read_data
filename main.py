@@ -14,6 +14,7 @@ import sys
 import time
 import math
 from threading import Lock, Thread
+from pathlib import Path
 
 current_milli_time = lambda: int(round(time.time() * 1000))
 
@@ -251,9 +252,13 @@ class DWD:
                     zipc = self.get_zip_code_from_geo(new_station.latitude, new_station.longitude, apikeylist[keyindex]);
             
                 if zipc == -2:
-                    print("-> error: query limit for all keys reached")
+                    error_text = "-> error: query limit for all keys reached"
+                    print(error_text)
+                    LogWriter.writeLog(self,file_name,error_text)
                 elif zipc == -3:
-                    print(" -> something went wrong")
+                    error_text = " -> something went wrong"
+                    print(error_text)
+                    LogWriter.writeLog(self,file_name,error_text)
                 else:
                     new_station.set_zip_code(zipc)
    
@@ -325,20 +330,20 @@ class DWD:
     def get_station_data(self, station):
         print("fetch data from station: " + station.id, end='\r')
         local_file = "station_" + station.id
-        local_file_historical = "station_" + station.id
+        local_file_historical = "station_" + station.id + "_historical"
 
         data = []
 
-        try:
+       
  			# Name der Recent-Files: tageswerte_KL_00044_akt.zip
-            urllib.request.urlretrieve(self.file_url + self.file_prefix + station.id + self.file_suffix,
-                                       local_file + ".zip")
-            # Name der Historical-Files: tageswerte_KL_00001_19370101_19860630_hist.zip
-            urllib.request.urlretrieve(self.file_url_historical + self.file_prefix + station.id + recording_start + "_" + recording_end + self.file_suffix_historical,
-                                       local_file_historical + ".zip")
-        except Exception:
-            print("->station data doesn't exist")
-            return data
+        urllib.request.urlretrieve(self.file_url + self.file_prefix + station.id + self.file_suffix,
+                                                 local_file + ".zip")
+        print(self.file_url_historical + self.file_prefix + station.id +"_"+ station.recording_start + "_" + station.recording_end + self.file_suffix_historical)
+        # Name der Historical-Files: tageswerte_KL_00001_19370101_19860630_hist.zip
+        urllib.request.urlretrieve(self.file_url_historical + self.file_prefix + station.id +"_"+ station.recording_start + "_" + station.recording_end + self.file_suffix_historical,
+                                     local_file_historical + ".zip")
+
+       
 
         zip_ref = zipfile.ZipFile(local_file + ".zip", 'r')
         zip_ref.extractall(local_file)
@@ -448,3 +453,28 @@ else:
 
 
 dwd.get_weather_data(file_name, zip_flag) # für alle: -1
+
+
+class LogWriter:
+
+  error_flag = False
+  counter = 0
+
+  def writeLog(self,file_name,error_message):
+
+    self.error_flag = True
+    self.counter = self.counter+1
+
+    dir = os.path.dirname(__file__) + file_name + ".log"
+    my_file = Path(dir + file_name + ".log")
+    
+
+    if my_file.is_File():
+      log = open(dir,a)
+      log.append(error_message)
+      log.close()
+    else:
+      log = open(dir,w)
+      log.write(error_message)
+      log.close
+
