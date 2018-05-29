@@ -232,9 +232,10 @@ class DWD:
 
     #
 
-    def get_active_station_id(self, active_stations, id):
+    def get_active_station_by_id(self, active_stations, ida):
       for x in range(len(active_stations)):
-        if(active_stations[x].id == id):
+
+        if active_stations[x].id == ida:
           return active_stations[x]
 
       return None
@@ -247,6 +248,7 @@ class DWD:
      "AIzaSyAojtE1GHYx1HvXSaMuK98RkeboisXL954"]
      keyindex = 0
 
+
      for x in range(start, end):
 
         if x==0 or x==1:
@@ -257,7 +259,7 @@ class DWD:
 
         line = line.split(';')
 
-        container = self.get_active_station_id(active_stations, line[0])
+        container = self.get_active_station_by_id(active_stations, line[0])
 
 
 
@@ -265,11 +267,11 @@ class DWD:
           continue
 
 
-        new_station = Station(line[0], line[1], line[2], container.mid, line[3], line[4], line[5], line[6], line[7])
 
-        print("Get Station " + new_station.id, end='\r')
+        new_station = Station(line[0], line[1], line[2], container.mid, line[3], line[4], line[5], line[6], line[7])
         
-        if new_station.id in active_stations :         
+      
+        if self.get_active_station_by_id(active_stations, new_station.id) != None:         
             if self.zip_flag == 1:
                 zipc = self.get_zip_code_from_geo(new_station.latitude, new_station.longitude, apikeylist[keyindex]);
 
@@ -288,6 +290,8 @@ class DWD:
                 else:
                     new_station.set_zip_code(zipc)
    
+           
+
             
             self.stations.append(new_station)
             self.station_count+=1
@@ -328,17 +332,16 @@ class DWD:
       for item in html.split("_akt.zip"):
         if "tageswerte_KL_" in item:
           id = item[ item.find("tageswerte_KL_")+len("tageswerte_KL_") : ]
-          active_stations.append(TempContainer(id, None))
-
+          tc = TempContainer(id, None)
+          active_stations.append(tc)
 
       for item in html2.split("_hist.zip"):
         if "tageswerte_KL_" in item:
           raw = item[ item.find("tageswerte_KL_")+len("tageswerte_KL_") : ]
           id = raw[:5]
-          mid = raw[7:14]
+          mid = raw[15:23]
           historic_ids.append(id)
           historic_mids.append(mid)
-
 
       for i in range(len(active_stations)):
         mid = historic_mids[historic_ids.index(active_stations[i].id)]
@@ -395,13 +398,11 @@ class DWD:
         local_file_historical = "station_" + station.id + "_historical"
 
         data = []
-
-        print(station.recording_mid )
        
  			  # Name der Recent-Files: tageswerte_KL_00044_akt.zip
         urllib.request.urlretrieve(self.file_url + self.file_prefix + station.id + self.file_suffix,
                                                  local_file + ".zip")
-        print(self.file_url_historical + self.file_prefix + station.id +"_"+ station.recording_start + "_" + station.recording_end + self.file_suffix_historical)
+        print(self.file_url_historical + self.file_prefix + station.id +"_"+ station.recording_start + "_" + station.recording_mid + self.file_suffix_historical)
         
         # Name der Historical-Files: tageswerte_KL_00001_19370101_19860630_hist.zip
         urllib.request.urlretrieve(self.file_url_historical + self.file_prefix + station.id +"_"+ station.recording_start + "_" + station.recording_mid + self.file_suffix_historical,
