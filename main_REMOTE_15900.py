@@ -107,8 +107,6 @@ class DWD:
     file_prefix = "tageswerte_KL_"
     file_suffix = "_akt.zip"
     file_url = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/"
-    file_url_historical = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/historical/"
-    file_suffix_historical = "_hist.zip"
     station_list = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/KL_Tageswerte_Beschreibung_Stationen.txt"
 
 
@@ -328,22 +326,9 @@ class DWD:
 
         data = []
 
-<<<<<<< HEAD
-        try:
- 			# Name der Recent-Files: tageswerte_KL_00044_akt.zip
-            urllib.request.urlretrieve(self.file_url + self.file_prefix + station.id + self.file_suffix,
-                                       local_file + ".zip")
-            # Name der Historical-Files: tageswerte_KL_00001_19370101_19860630_hist.zip
-            urllib.request.urlretrieve(self.file_url_historical + self.file_prefix + station.id + recording_start + "_" + recording_end + self.file_suffix_historical,
-                                       local_file + ".zip")
-        except Exception:
-            print("->station data doesn't exist")
-            return data
-=======
         urllib.request.urlretrieve(self.file_url + self.file_prefix + station.id + self.file_suffix,
                                        local_file + ".zip")
       
->>>>>>> 22f5a576f540c0d46ad0eb6b1df48152dd2ff38d
 
         zip_ref = zipfile.ZipFile(local_file + ".zip", 'r')
         zip_ref.extractall(local_file)
