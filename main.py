@@ -148,13 +148,13 @@ class DWD:
         return None
 
     # saves a list of cleaned weather data as csv
-    def get_weather_data(self, max_stations, file_name):
+    def get_weather_data(self, file_name):
 
         start_time_glob = current_milli_time()
 
         print("\n## Get stations ##")
         start_time = current_milli_time()
-        self.stations = dwd.get_stations(max_stations)
+        self.stations = dwd.get_stations()
         print("[runtime: " + str(current_milli_time()-start_time) + " ms]")
 
 
@@ -218,7 +218,7 @@ class DWD:
     #
 
 
-    def get_stations_from(self,lines, active_stations,max_stations, start, end):
+    def get_stations_from(self,lines, active_stations, start, end):
 
       #index ab 2!!!!
      apikeylist = ["AIzaSyBJ1HpXkBekg9Ek553aKSILi-d-q8RlFO8", 
@@ -256,21 +256,8 @@ class DWD:
                 new_station.set_zip_code(zipc)
    
             
-            if max_stations != -1:
-                self.lock.acquire()
-
-            if(max_stations != -1 and self.station_count >= max_stations):
-                self.lock.release()
-                break
-
             self.stations.append(new_station)
             self.station_count+=1
-
-            if max_stations != -1:
-                self.lock.release()
-          
-
-
 
 
     def get_station_data_from(self, station_data, start, end):
@@ -284,7 +271,7 @@ class DWD:
             completelist += station
         return completelist
 
-    def get_stations(self, max_stations):
+    def get_stations(self):
 
         req = urllib.request.Request('ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/')
         with urllib.request.urlopen(req) as response:
@@ -319,7 +306,7 @@ class DWD:
 
 
               if len(lines) > i*interval_len+1:
-                new_thread = Thread(target=self.get_stations_from, args=(lines,active_stations,max_stations, i*interval_len, end))
+                new_thread = Thread(target=self.get_stations_from, args=(lines,active_stations, i*interval_len, end))
                 threads.append(new_thread)
                 new_thread.start()
 
@@ -429,14 +416,9 @@ dwd = DWD()
 
 print("\n\nFetch data from DWD")
 print("-----------------------")
-stations = input('fetch (all | debug): ')
 file_name = input('output file: ')
 dwd.thread_count = int(input('threads: '))
 
-if stations == 'all':
-  stations = -1;
-else:
-  stations = 10;
 
 
-dwd.get_weather_data(int(stations), file_name) # für alle: -1
+dwd.get_weather_data(file_name) # für alle: -1
