@@ -1,0 +1,6 @@
+Stations_ID;Stationsname;Geo. Laenge [Grad];Geo. Breite [Grad];Stationshoehe [m];Geberhoehe ueber Grund [m];Von_Datum;Bis_Datum;Geraetetyp Name;Messverfahren;eor;
+3904;Nennig;;;;;;19640430;Gerätetyp unbekannt;Temperaturmessung, konv.;eor;
+3904;Nennig;6.38;49.53;153;.05;19640501;19850919;Minimumthermometer;Temperaturmessung, konv.;eor;
+3904;Perl-Nennig;6.38;49.53;155;.05;19850920;19920930;Minimumthermometer;Temperaturmessung, konv.;eor;
+3904;Perl-Nennig;6.38;49.54;152;.05;20040614;;PT 100 (Luft);Temperaturmessung, elektr.;eor;
+generiert: 29.05.2018 --  Deutscher Wetterdienst  --

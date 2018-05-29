@@ -1,0 +1,6 @@
+Stations_id;Stationshoehe;Geogr.Breite;Geogr.Laenge;von_datum;bis_datum;Stationsname
+  3904;  155.00; 49.5300;  6.3832;18920901;19380131;Perl-Nennig
+  3904;  158.00; 49.5299;  6.3846;19380201;19640430;Perl-Nennig
+  3904;  153.00; 49.5339;  6.3803;19640501;19850919;Perl-Nennig
+  3904;  155.00; 49.5277;  6.3821;19850920;19920930;Perl-Nennig
+  3904;  152.00; 49.5354;  6.3789;20030808;        ;Perl-Nennig

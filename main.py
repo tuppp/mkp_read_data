@@ -141,7 +141,7 @@ class DWD:
               break
 
      
-        return -1
+        return zip_code
 
     def get_station_by_id(self, id, stations):
         for station in stations:
