@@ -41,11 +41,12 @@ class Station:
     state = None
     zip_code = None
 
-    def __init__(self, id, recording_start, recording_end, height, latitude, longitude, name, state):
+    def __init__(self, id, recording_start, recording_end, recording_mid, height, latitude, longitude, name, state):
         self.id = id
         self.recording_start = recording_start
         self.recording_end = recording_end
         self.height = height
+        self.recording_mid = recording_mid
         self.latitude = latitude
         self.longitude = longitude
         self.name = name
@@ -231,6 +232,12 @@ class DWD:
 
     #
 
+    def get_active_station_id(self, active_stations, id):
+      for x in range(len(active_stations)):
+        if(active_stations[x].id == id):
+          return active_stations[x]
+
+      return None
 
     def get_stations_from(self,lines, active_stations, start, end):
 
@@ -250,7 +257,9 @@ class DWD:
 
         line = line.split(';')
 
-        new_station = Station(line[0], line[1], line[2], line[3], line[4], line[5], line[6], line[7])
+        container = get_active_station_id(active_stations, line[0])
+
+        new_station = Station(line[0], line[1], line[2], container.mid, line[3], line[4], line[5], line[6], line[7])
 
         print("Get Station " + new_station.id, end='\r')
         
@@ -388,7 +397,7 @@ class DWD:
         print(self.file_url_historical + self.file_prefix + station.id +"_"+ station.recording_start + "_" + station.recording_end + self.file_suffix_historical)
         
         # Name der Historical-Files: tageswerte_KL_00001_19370101_19860630_hist.zip
-        urllib.request.urlretrieve(self.file_url_historical + self.file_prefix + station.id +"_"+ station.recording_start + "_" + station.recording_end + self.file_suffix_historical,
+        urllib.request.urlretrieve(self.file_url_historical + self.file_prefix + station.id +"_"+ station.recording_start + "_" + station.recording_mid + self.file_suffix_historical,
                                      local_file_historical + ".zip")
 
        
