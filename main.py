@@ -257,7 +257,13 @@ class DWD:
 
         line = line.split(';')
 
-        container = get_active_station_id(active_stations, line[0])
+        container = self.get_active_station_id(active_stations, line[0])
+
+
+
+        if(container == None):
+          continue
+
 
         new_station = Station(line[0], line[1], line[2], container.mid, line[3], line[4], line[5], line[6], line[7])
 
