@@ -19,8 +19,19 @@ from pathlib import Path
 current_milli_time = lambda: int(round(time.time() * 1000))
 
 
+
+class TempContainer:
+  id = None
+  mid = None
+
+  def __init__(self, id, mid):
+    self.id = id
+    self.mid = mid
+
+
 class Station:
     id = None
+    recording_mid = None
     recording_start = None
     recording_end = None
     height = None
@@ -278,17 +289,53 @@ class DWD:
             completelist += station
         return completelist
 
+
+    def get_active_stations(self):
+      req = urllib.request.Request('ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/')
+      req2 = urllib.request.Request('ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/historical/')
+
+      with urllib.request.urlopen(req) as response:
+        html = str(response.read())
+
+      with urllib.request.urlopen(req2) as response2:
+        html2 = str(response2.read())
+
+
+
+      active_stations = []
+
+      historic_ids = []
+      historic_mids = []
+
+      historic_stations = []
+
+
+      for item in html.split("_akt.zip"):
+        if "tageswerte_KL_" in item:
+          id = item[ item.find("tageswerte_KL_")+len("tageswerte_KL_") : ]
+          active_stations.append(TempContainer(id, None))
+
+
+      for item in html2.split("_hist.zip"):
+        if "tageswerte_KL_" in item:
+          raw = item[ item.find("tageswerte_KL_")+len("tageswerte_KL_") : ]
+          id = raw[:5]
+          mid = raw[7:14]
+          historic_ids.append(id)
+          historic_mids.append(mid)
+
+
+      for i in range(len(active_stations)):
+        mid = historic_mids[historic_ids.index(active_stations[i].id)]
+        active_stations[i].mid = mid
+
+      
+      return active_stations
+
     def get_stations(self):
+        active_stations = self.get_active_stations()
+        
 
-        req = urllib.request.Request('ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/')
-        with urllib.request.urlopen(req) as response:
-          html = str(response.read())
-
-        active_stations = []
-
-        for item in html.split("_akt.zip"):
-          if "tageswerte_KL_" in item:
-            active_stations.append(item[ item.find("tageswerte_KL_")+len("tageswerte_KL_") : ])
 
 
         urllib.request.urlretrieve(self.station_list, "temp")
@@ -335,10 +382,11 @@ class DWD:
         data = []
 
        
- 			# Name der Recent-Files: tageswerte_KL_00044_akt.zip
+ 			  # Name der Recent-Files: tageswerte_KL_00044_akt.zip
         urllib.request.urlretrieve(self.file_url + self.file_prefix + station.id + self.file_suffix,
                                                  local_file + ".zip")
         print(self.file_url_historical + self.file_prefix + station.id +"_"+ station.recording_start + "_" + station.recording_end + self.file_suffix_historical)
+        
         # Name der Historical-Files: tageswerte_KL_00001_19370101_19860630_hist.zip
         urllib.request.urlretrieve(self.file_url_historical + self.file_prefix + station.id +"_"+ station.recording_start + "_" + station.recording_end + self.file_suffix_historical,
                                      local_file_historical + ".zip")
