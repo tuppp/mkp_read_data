@@ -2,6 +2,10 @@
 *.csv#
 *.csv
 *.xml
+*.orig
+*.txt
+*.html
+*.zip
 
 # und der komische ordner
 /.idea
