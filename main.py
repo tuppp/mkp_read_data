@@ -436,25 +436,6 @@ class DWD:
 
       return row
 
-        
-
-dwd = DWD()
-
-print("\n\nFetch data from DWD")
-print("-----------------------")
-file_name = input('output file: ')
-dwd.thread_count = int(input('threads: '))
-zip_flag = input('zipcodes (yes | no): ')
-
-if zip_flag == 'yes':
-    zip_flag = 1
-else:
-    zip_flag = 0
-
-
-dwd.get_weather_data(file_name, zip_flag) # für alle: -1
-
-
 class LogWriter:
 
   error_flag = False
@@ -477,4 +458,24 @@ class LogWriter:
       log = open(dir,w)
       log.write(error_message)
       log.close
+
+        
+
+dwd = DWD()
+
+print("\n\nFetch data from DWD")
+print("-----------------------")
+file_name = input('output file: ')
+dwd.thread_count = int(input('threads: '))
+zip_flag = input('zipcodes (yes | no): ')
+
+if zip_flag == 'yes':
+    zip_flag = 1
+else:
+    zip_flag = 0
+
+
+dwd.get_weather_data(file_name, zip_flag) # für alle: -1
+
+
 
