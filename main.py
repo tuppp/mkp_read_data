@@ -367,26 +367,6 @@ class DWD:
 
         shutil.rmtree(local_file_historical)
 
-	    with open(local_file_historical + ".csv") as csvfile:
-	       readCSV = csv.reader(csvfile, delimiter=';')
-            first_row = True
-            current_station = None
-
-            i = 0
-            for row in readCSV:
-              if i>=1:
-                row = self.parse(row);
-                current_data = MeasuredData(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8],
-                                            row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16],
-                                            row[17], row[18])
-                
-
-                current_data.set_station_data(station.name, station.zip_code)
-
-                data.append(current_data)
-              i+=1
-        os.remove(local_file_historical+".csv")
-        
 
         with open(local_file + ".csv") as csvfile:
             readCSV = csv.reader(csvfile, delimiter=';')
@@ -407,7 +387,36 @@ class DWD:
                 data.append(current_data)
               i+=1
 
+         with open(local_file_historical + ".csv") as csvfile:
+           readCSV = csv.reader(csvfile, delimiter=';')
+            first_row = True
+            current_station = None
+
+            i = 0
+            for row in readCSV:
+              if i>=1:
+                row = self.parse(row);
+                current_data = MeasuredData(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8],
+                                            row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16],
+                                            row[17], row[18])
+                
+
+                current_data.set_station_data(station.name, station.zip_code)
+
+                for oldrow in data:
+
+                    if(oldrow.station_id == row[0]):
+                        if(oldrow.mess_datum == row[1]):
+                            break;
+                        else:
+                            data.append(current_data)
+                    else:
+                        data.append(current_data)
+                
+              i+=1
+
         os.remove(local_file + ".csv")
+        os.remove(local_file_historical+".csv")
 
         print(" -> ok", end='\r')
 
