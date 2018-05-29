@@ -328,7 +328,6 @@ class DWD:
 
         data = []
 
-<<<<<<< HEAD
         try:
  			# Name der Recent-Files: tageswerte_KL_00044_akt.zip
             urllib.request.urlretrieve(self.file_url + self.file_prefix + station.id + self.file_suffix,
@@ -339,11 +338,6 @@ class DWD:
         except Exception:
             print("->station data doesn't exist")
             return data
-=======
-        urllib.request.urlretrieve(self.file_url + self.file_prefix + station.id + self.file_suffix,
-                                       local_file + ".zip")
-      
->>>>>>> 22f5a576f540c0d46ad0eb6b1df48152dd2ff38d
 
         zip_ref = zipfile.ZipFile(local_file + ".zip", 'r')
         zip_ref.extractall(local_file)
