@@ -12,6 +12,7 @@ import numpy as np
 import re
 import sys
 import time
+import math
 from threading import Lock, Thread
 
 current_milli_time = lambda: int(round(time.time() * 1000))
@@ -163,7 +164,7 @@ class DWD:
         start_time = current_milli_time()
 
 
-        interval_len = int(len(self.stations)/self.thread_count)
+        interval_len = math.ceil(len(self.stations)/self.thread_count)
 
         threads = [];
 
@@ -173,21 +174,14 @@ class DWD:
           else:
             end = (1+i)*interval_len
 
-          new_thread = Thread(target=self.get_station_data_from, args=(station_data, i*interval_len, end))
-          threads.append(new_thread)
-          new_thread.start()
+          if len(self.stations)>i*interval_len+1:
+            new_thread = Thread(target=self.get_station_data_from, args=(station_data, i*interval_len, end))
+            threads.append(new_thread)
+            new_thread.start()
 
 
-        for i in range(self.thread_count):
+        for i in range(len(threads)):
           threads[i].join()
-
-
-
-
-
-        #for station in self.stations:
-        #    station_data.append(dwd.get_station_data(station))
-
 
 
 
@@ -247,7 +241,6 @@ class DWD:
         print("Get Station " + new_station.id, end='\r')
         
         if new_station.id in active_stations:         
-            print(" -> get zip code", end='\r')
             zipc = self.get_zip_code_from_geo(new_station.latitude, new_station.longitude, apikeylist[keyindex]);
 
             while(zipc == -2 and keyindex < len(apikeylist)-1):
@@ -261,7 +254,6 @@ class DWD:
                 print(" -> something went wrong")
             else:
                 new_station.set_zip_code(zipc)
-                print(" -> ok", end='\r')
    
             
             if max_stations != -1:
@@ -277,8 +269,6 @@ class DWD:
             if max_stations != -1:
                 self.lock.release()
           
-        else:
-            print(" -> invalid", end='\r')
 
 
 
@@ -316,7 +306,7 @@ class DWD:
 
             stations = []
 
-            interval_len = int(len(lines)/self.thread_count)
+            interval_len = math.ceil(len(lines)/self.thread_count)
 
             threads = [];
 
@@ -326,12 +316,15 @@ class DWD:
               else:
                 end = (1+i)*interval_len
 
-              new_thread = Thread(target=self.get_stations_from, args=(lines,active_stations,max_stations, i*interval_len, end))
-              threads.append(new_thread)
-              new_thread.start()
 
 
-            for i in range(self.thread_count):
+              if len(lines) > i*interval_len+1:
+                new_thread = Thread(target=self.get_stations_from, args=(lines,active_stations,max_stations, i*interval_len, end))
+                threads.append(new_thread)
+                new_thread.start()
+
+
+            for i in range(len(threads)):
               threads[i].join()
 
             os.remove("temp")
@@ -346,12 +339,9 @@ class DWD:
 
         data = []
 
-        try:
-            urllib.request.urlretrieve(self.file_url + self.file_prefix + station.id + self.file_suffix,
+        urllib.request.urlretrieve(self.file_url + self.file_prefix + station.id + self.file_suffix,
                                        local_file + ".zip")
-        except Exception:
-            print("->station data doesn't exist")
-            return data
+      
 
         zip_ref = zipfile.ZipFile(local_file + ".zip", 'r')
         zip_ref.extractall(local_file)
