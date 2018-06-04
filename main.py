@@ -426,14 +426,15 @@ class DWD:
                     current_data.set_station_data(station.name, station.zip_code)
 
                     for oldrow in data:
-
                         if (oldrow.station_id == row[0]):
                             if (oldrow.mess_datum == row[1]):
-                                break;
+                                break
                             else:
                                 data.append(current_data)
+                                break
                         else:
                             data.append(current_data)
+                            break
 
                 i += 1
 
