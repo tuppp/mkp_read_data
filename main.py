@@ -259,11 +259,9 @@ class DWD:
                     if zipc == -2:
                         error_text = "-> error: query limit for all keys reached"
                         print(error_text)
-                        LogWriter.writeLog(self, file_name, error_text)
                     elif zipc == -3:
                         error_text = " -> something went wrong"
                         print(error_text)
-                        LogWriter.writeLog(self, file_name, error_text)
                     else:
                         new_station.set_zip_code(zipc)
 
@@ -499,28 +497,6 @@ class DWD:
 
         return row
 
-
-class LogWriter:
-    error_flag = False
-
-    # counter = 0
-
-    def writeLog(self, file_name, error_message):
-
-        self.error_flag = True
-        # self.counter = self.counter+1
-
-        dir = os.path.dirname(__file__) + file_name + ".log"
-        my_file = Path(dir + file_name + ".log")
-
-        if my_file.is_File():
-            log = open(dir, a)
-            log.append(error_message)
-            log.close()
-        else:
-            log = open(dir, w)
-            log.write(error_message)
-            log.close
 
 
 dwd = DWD()
