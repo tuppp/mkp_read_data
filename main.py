@@ -119,6 +119,20 @@ class DWD:
     file_suffix_historical = "_hist.zip"
     station_list = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/KL_Tageswerte_Beschreibung_Stationen.txt"
 
+    def get_zip_code_from_csv(self, station_id):
+        reader = csv.reader(open("geo_to_plz.csv", "r"), delimiter=",")
+        x = list(reader)
+        result = np.array(x).astype(str)
+        
+        if(type(station_id) != str):
+            station_id == str(station_id)
+            
+        for i in range(1,result.shape[0]):
+            if result[i][0] == station_id:
+                return result[i][3]
+        return -1
+    
+    
     def get_zip_code_from_geo(self, lat, lng, apikey):
 
         zip_code = None
@@ -264,7 +278,11 @@ class DWD:
             new_station = Station(line[0], line[1], line[2], container.mid, line[3], line[4], line[5], line[6], line[7])
 
             if self.get_active_station_by_id(active_stations, new_station.id) != None:
-                if self.zip_flag == 1:
+                
+                plz = self.get_zip_code_from_csv(new_station.id)
+                if plz != -1:
+                    new_station.set_zip_code(plz)
+                if plz == -1 and self.zip_flag == 1:
                     zipc = self.get_zip_code_from_geo(new_station.latitude, new_station.longitude,
                                                       apikeylist[keyindex]);
 
