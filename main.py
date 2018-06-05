@@ -275,7 +275,7 @@ class DWD:
             try:
               station_data.append(dwd.get_station_data(self.stations[i]))
             except:
-              print("I excepted some data, but there was none!")
+              print("I expected some data, but there was none!")
 
 
     def concatenate_lists(self, station_data):
@@ -392,12 +392,14 @@ class DWD:
                 os.rename(local_file + "/" + file, local_file + ".csv")
 
         shutil.rmtree(local_file)
+        print("I tried to delete the recent-folder!")
 
         for file in os.listdir(local_file_historical):
             if fnmatch.fnmatch(file, "produkt_klima_tag*"):
                 os.rename(local_file_historical + "/" + file, local_file_historical + ".csv")
 
         shutil.rmtree(local_file_historical)
+        print("I tried to delete the historical-folder!")
 
         with open(local_file + ".csv") as csvfile:
             readCSV = csv.reader(csvfile, delimiter=';')
