@@ -260,7 +260,7 @@ class DWD:
                         error_text = "-> error: query limit for all keys reached"
                         print(error_text)
                     elif zipc == -3:
-                        error_text = " -> something went wrong"
+                        error_text = " -> something went wrong (-3 da result Laenge 0)"
                         print(error_text)
                     else:
                         new_station.set_zip_code(zipc)
