@@ -278,7 +278,7 @@ class DWD:
                         print(error_text)
                         LogWriter.writeLog(self, file_name, error_text)
                     elif zipc == -3:
-                        error_text = " -> something went wrong (-3 da result Laenge 0)"
+                        error_text = " -> something went wrong"
                         print(error_text)
                         LogWriter.writeLog(self, file_name, error_text)
                     else:
@@ -441,6 +441,7 @@ class DWD:
 
                     current_data.set_station_data(station.name, station.zip_code)
 
+                    data.append(current_data)
                     self.write_to_file(current_data, False)
                 i += 1
 
@@ -461,17 +462,13 @@ class DWD:
 
                         current_data.set_station_data(station.name, station.zip_code)
 
+                        print(3)
                         for oldrow in data:
-                            if (oldrow.station_id == row[0]):
-                                if (oldrow.mess_datum == row[1]):
-                                    break
-                                else:
-                                    self.write_to_file(current_data, True)
-                                    break
+                            if (oldrow.mess_datum == row[1]):
+                                break
                             else:
                                 self.write_to_file(current_data, True)
                                 break
-
                     i += 1
             os.remove(local_file_historical + ".csv")
 
@@ -480,7 +477,6 @@ class DWD:
 
         print(" -> ok", end='\r')
 
-        return data
 
     def get_zip_code(lat, lon):
         zip_code = 0
