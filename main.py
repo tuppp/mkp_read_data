@@ -272,7 +272,11 @@ class DWD:
 
     def get_station_data_from(self, station_data, start, end):
         for i in range(start, end):
-            station_data.append(dwd.get_station_data(self.stations[i]))
+            try:
+              station_data.append(dwd.get_station_data(self.stations[i]))
+            except:
+              print("I excepted some data, but there was none!")
+
 
     def concatenate_lists(self, station_data):
         completelist = []
@@ -366,9 +370,12 @@ class DWD:
             self.file_url_historical + self.file_prefix + station.id + "_" + station.recording_start + "_" + station.recording_mid + self.file_suffix_historical)
 
         # Name der Historical-Files: tageswerte_KL_00001_19370101_19860630_hist.zip
-        urllib.request.urlretrieve(
-            self.file_url_historical + self.file_prefix + station.id + "_" + station.recording_start + "_" + station.recording_mid + self.file_suffix_historical,
-            local_file_historical + ".zip")
+        try:
+          urllib.request.urlretrieve(
+              self.file_url_historical + self.file_prefix + station.id + "_" + station.recording_start + "_" + station.recording_mid + self.file_suffix_historical,
+              local_file_historical + ".zip")
+        except:
+          print("I expected some data in the historical zip, but there was none!")
 
         zip_ref = zipfile.ZipFile(local_file + ".zip", 'r')
         zip_ref.extractall(local_file)
