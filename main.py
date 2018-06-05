@@ -214,6 +214,23 @@ class DWD:
 
     #
 
+    def write_to_file(self, data, historical):
+        file = None
+
+        if(historical):
+            file = open("out_historical.csv", 'a')
+        else:
+            file = open("out_recent.csv", 'a')
+
+        file.write(str(data.station_id) + ';' + str(data.station_name) + ';' + str(
+            data.station_zip_code) + ';' + str(data.mess_datum) + ';' + str(data.qn_3) + ';' + str(
+            data.fx) + ';' + str(data.fm) + ';' + str(data.qn_4) + ';' + str(data.rsk) + ';' + str(
+            data.rskf) + ';' + str(data.sdk) + ';' + str(data.shk_tag) + ';' + str(data.nm) + ';' + str(
+            data.vpm) + ';' + str(data.pm) + ';' + str(data.tmk) + ';' + str(data.upm) + ';' + str(
+            data.txk) + ';' + str(data.tnk) + ';' + str(data.tgk) + ';' + str(data.eor) + "\n")
+
+        file.close()
+
     def get_active_station_by_id(self, active_stations, ida):
         for x in range(len(active_stations)):
 
@@ -259,9 +276,11 @@ class DWD:
                     if zipc == -2:
                         error_text = "-> error: query limit for all keys reached"
                         print(error_text)
+                        LogWriter.writeLog(self, file_name, error_text)
                     elif zipc == -3:
                         error_text = " -> something went wrong (-3 da result Laenge 0)"
                         print(error_text)
+                        LogWriter.writeLog(self, file_name, error_text)
                     else:
                         new_station.set_zip_code(zipc)
 
@@ -270,10 +289,7 @@ class DWD:
 
     def get_station_data_from(self, station_data, start, end):
         for i in range(start, end):
-            try:
-              station_data.append(dwd.get_station_data(self.stations[i]))
-            except:
-              print("I expected some data, but there was none!")
+              dwd.get_station_data(self.stations[i])
 
 
     def concatenate_lists(self, station_data):
@@ -354,12 +370,19 @@ class DWD:
 
             return self.stations
 
+
+
+
+
+
     def get_station_data(self, station):
         print("fetch data from station: " + station.id, end='\r')
         local_file = "station_" + station.id
         local_file_historical = "station_" + station.id + "_historical"
 
         data = []
+
+        historicalValid = False
 
         # Name der Recent-Files: tageswerte_KL_00044_akt.zip
         urllib.request.urlretrieve(self.file_url + self.file_prefix + station.id + self.file_suffix,
@@ -372,6 +395,7 @@ class DWD:
           urllib.request.urlretrieve(
               self.file_url_historical + self.file_prefix + station.id + "_" + station.recording_start + "_" + station.recording_mid + self.file_suffix_historical,
               local_file_historical + ".zip")
+          historicalValid = True
         except:
           print("I expected some data in the historical zip, but there was none!")
 
@@ -380,10 +404,12 @@ class DWD:
         zip_ref.close()
         os.remove(local_file + ".zip")
 
-        zip_ref2 = zipfile.ZipFile(local_file_historical + ".zip", 'r')
-        zip_ref2.extractall(local_file_historical)
-        zip_ref2.close()
-        os.remove(local_file_historical + ".zip")
+
+        if(historicalValid):
+            zip_ref2 = zipfile.ZipFile(local_file_historical + ".zip", 'r')
+            zip_ref2.extractall(local_file_historical)
+            zip_ref2.close()
+            os.remove(local_file_historical + ".zip")
 
         for file in os.listdir(local_file):
             if fnmatch.fnmatch(file, "produkt_klima_tag*"):
@@ -392,11 +418,12 @@ class DWD:
         shutil.rmtree(local_file)
 
 
-        for file in os.listdir(local_file_historical):
-            if fnmatch.fnmatch(file, "produkt_klima_tag*"):
-                os.rename(local_file_historical + "/" + file, local_file_historical + ".csv")
+        if(historicalValid):
+            for file in os.listdir(local_file_historical):
+                if fnmatch.fnmatch(file, "produkt_klima_tag*"):
+                    os.rename(local_file_historical + "/" + file, local_file_historical + ".csv")
 
-        shutil.rmtree(local_file_historical)
+            shutil.rmtree(local_file_historical)
 
 
         with open(local_file + ".csv") as csvfile:
@@ -414,39 +441,42 @@ class DWD:
 
                     current_data.set_station_data(station.name, station.zip_code)
 
-                    data.append(current_data)
+                    self.write_to_file(current_data, False)
                 i += 1
 
-        with open(local_file_historical + ".csv") as csvfile:
-            readCSV = csv.reader(csvfile, delimiter=';')
-            first_row = True
-            current_station = None
+        if(historicalValid):
 
-            i = 0
-            for row in readCSV:
-                if i >= 1:
-                    row = self.parse(row);
-                    current_data = MeasuredData(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8],
-                                                row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16],
-                                                row[17], row[18])
+            with open(local_file_historical + ".csv") as csvfile:
+                readCSV = csv.reader(csvfile, delimiter=';')
+                first_row = True
+                current_station = None
 
-                    current_data.set_station_data(station.name, station.zip_code)
+                i = 0
+                for row in readCSV:
+                    if i >= 1:
+                        row = self.parse(row);
+                        current_data = MeasuredData(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8],
+                                                    row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16],
+                                                    row[17], row[18])
 
-                    for oldrow in data:
-                        if (oldrow.station_id == row[0]):
-                            if (oldrow.mess_datum == row[1]):
-                                break
+                        current_data.set_station_data(station.name, station.zip_code)
+
+                        for oldrow in data:
+                            if (oldrow.station_id == row[0]):
+                                if (oldrow.mess_datum == row[1]):
+                                    break
+                                else:
+                                    self.write_to_file(current_data, True)
+                                    break
                             else:
-                                data.append(current_data)
+                                self.write_to_file(current_data, True)
                                 break
-                        else:
-                            data.append(current_data)
-                            break
 
-                i += 1
+                    i += 1
+            os.remove(local_file_historical + ".csv")
 
         os.remove(local_file + ".csv")
-        os.remove(local_file_historical + ".csv")
+
 
         print(" -> ok", end='\r')
 
@@ -498,6 +528,28 @@ class DWD:
         return row
 
 
+class LogWriter:
+    error_flag = False
+
+    # counter = 0
+
+    def writeLog(self, file_name, error_message):
+
+        self.error_flag = True
+        # self.counter = self.counter+1
+
+        dir = os.path.dirname(__file__) + file_name + ".log"
+        my_file = Path(dir + file_name + ".log")
+
+        if my_file.is_File():
+            log = open(dir, a)
+            log.append(error_message)
+            log.close()
+        else:
+            log = open(dir, w)
+            log.write(error_message)
+            log.close
+
 
 dwd = DWD()
 
@@ -513,6 +565,3 @@ else:
     zip_flag = 0
 
 dwd.get_weather_data(file_name, zip_flag)  # für alle: -1
-
-
-
