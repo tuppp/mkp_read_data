@@ -115,6 +115,7 @@ class DWD:
 
     progress = 0
     progress_end = 0
+    start_time = None
 
     file_prefix = "tageswerte_KL_"
     file_suffix = "_akt.zip"
@@ -170,6 +171,8 @@ class DWD:
 
     # saves a list of cleaned weather data as csv
     def get_weather_data(self, file_name, zip_flag):
+
+        self.start_time = current_milli_time();
         self.zip_flag = zip_flag
         start_time_glob = current_milli_time()
 
@@ -508,13 +511,18 @@ class DWD:
 
     def update_progress(self, progress):
 
+
+        time_consumed = current_milli_time() - self.start_time
+
+        estimated_time = time_consumed / progress
+
         sys.stdout.write("[")
 
         for i in range(0, 100):
             if(int(progress*100) < i):
                 sys.stdout.write(" ")
             elif(int(progress*100) == i):
-                sys.stdout.write("(" +str(int(progress*100))+ "%)=>")
+                sys.stdout.write("(" +str(int(progress*100)) + "% | " + str(int(estimated_time/1000)) + "sec)=>")
             else:
                 sys.stdout.write("=")
 
