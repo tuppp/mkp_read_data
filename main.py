@@ -201,8 +201,6 @@ class DWD:
         for i in range(len(threads)):
             threads[i].join()
 
-		print("DONE!")
-
         return current_milli_time() - start_time_glob
 
     #
