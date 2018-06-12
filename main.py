@@ -204,6 +204,33 @@ class DWD:
         for i in range(len(threads)):
             threads[i].join()
 
+        print("-> weather data fetched <-")
+        print("[runtime: " + str(current_milli_time() - start_time) + " ms]")
+
+        print("\n\n## Concatenate lists ##")
+        start_time = current_milli_time()
+
+        print("concatenate", end='')
+
+        full_list = self.concatenate_lists(station_data)
+        print(" -> done")
+        print("[runtime: " + str(current_milli_time() - start_time) + " ms]")
+
+        print("\n\n## Safe CSV ##")
+        start_time = current_milli_time()
+
+        print("export", end='')
+        self.intoCSV(full_list, file_name)
+        print("-> done")
+        print("[runtime: " + str(current_milli_time() - start_time) + " ms]")
+
+        print("-> exported " + str(len(full_list)) + " datasets from " + str(len(self.stations)) + " stations <-")
+
+        print("\n\n")
+
+        print("[complete runtime: " + str(current_milli_time() - start_time_glob) + " ms]")
+
+        print("\n\n")
         return current_milli_time() - start_time_glob
 
     #
@@ -512,7 +539,7 @@ class DWD:
 
         time_consumed = current_milli_time() - self.start_time
 
-        estimated_time = time_consumed / progress
+        estimated_time = (time_consumed / progress)-time_consumed
 
         sys.stdout.write("[")
 
