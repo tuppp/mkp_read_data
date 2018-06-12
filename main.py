@@ -122,17 +122,17 @@ class DWD:
     def get_zip_code_from_csv(self, station_id):
         station_id = int(station_id)
         station_id = str(station_id)
-        
+
         reader = csv.reader(open("geo_to_plz.csv", "r"), delimiter=",")
         x = list(reader)
         result = np.array(x).astype(str)
-            
+
         for i in range(1,result.shape[0]):
             if result[i][0] == station_id:
                 return result[i][3]
         return -1
-    
-    
+
+
     def get_zip_code_from_geo(self, lat, lng, apikey):
 
         zip_code = None
@@ -228,22 +228,31 @@ class DWD:
 
     #
 
-    def write_to_file(self, data, historical):
+    def write_to_file(self, recent_data, hist_data):
         file = None
 
-        if(historical):
-            file = open("out_historical.csv", 'a')
-        else:
-            file = open("out_recent.csv", 'a')
+        recent_file = open("out_historical.csv", 'a')
+        hist_file = open("out_recent.csv", 'a')
 
-        file.write(str(data.station_id) + ';' + str(data.station_name) + ';' + str(
+        for data in recent_data:
+            recent_file.write(str(data.station_id) + ';' + str(data.station_name) + ';' + str(
             data.station_zip_code) + ';' + str(data.mess_datum) + ';' + str(data.qn_3) + ';' + str(
             data.fx) + ';' + str(data.fm) + ';' + str(data.qn_4) + ';' + str(data.rsk) + ';' + str(
             data.rskf) + ';' + str(data.sdk) + ';' + str(data.shk_tag) + ';' + str(data.nm) + ';' + str(
             data.vpm) + ';' + str(data.pm) + ';' + str(data.tmk) + ';' + str(data.upm) + ';' + str(
             data.txk) + ';' + str(data.tnk) + ';' + str(data.tgk) + ';' + str(data.eor) + "\n")
 
-        file.close()
+        recent_file.close()
+
+        for data in hist_data:
+            hist_file.write(str(data.station_id) + ';' + str(data.station_name) + ';' + str(
+            data.station_zip_code) + ';' + str(data.mess_datum) + ';' + str(data.qn_3) + ';' + str(
+            data.fx) + ';' + str(data.fm) + ';' + str(data.qn_4) + ';' + str(data.rsk) + ';' + str(
+            data.rskf) + ';' + str(data.sdk) + ';' + str(data.shk_tag) + ';' + str(data.nm) + ';' + str(
+            data.vpm) + ';' + str(data.pm) + ';' + str(data.tmk) + ';' + str(data.upm) + ';' + str(
+            data.txk) + ';' + str(data.tnk) + ';' + str(data.tgk) + ';' + str(data.eor) + "\n")
+
+        hist_file.close()
 
     def get_active_station_by_id(self, active_stations, ida):
         for x in range(len(active_stations)):
@@ -278,7 +287,7 @@ class DWD:
             new_station = Station(line[0], line[1], line[2], container.mid, line[3], line[4], line[5], line[6], line[7])
 
             if self.get_active_station_by_id(active_stations, new_station.id) != None:
-                
+
                 plz = self.get_zip_code_from_csv(new_station.id)
                 if plz != -1:
                     new_station.set_zip_code(plz)
@@ -306,7 +315,7 @@ class DWD:
     def get_station_data_from(self, station_data, start, end,ident):
         for i in range(start, end):
         	print("Ich bin Thread: " + str(ident))
-        	dwd.get_station_data(self.stations[i])
+        	dwd.get_station_data(self.stations[i], ident)
 
 
     def concatenate_lists(self, station_data):
@@ -392,14 +401,17 @@ class DWD:
 
 
 
-    def get_station_data(self, station):
-        
+    def get_station_data(self, station, t_id):
+
         local_file = "station_" + station.id
         local_file_historical = "station_" + station.id + "_historical"
 
-        data = []
+        recent_data = []
+        hist_data = []
 
         historicalValid = False
+
+        time = current_milli_time()
 
         # Name der Recent-Files: tageswerte_KL_00044_akt.zip
         try:
@@ -410,7 +422,9 @@ class DWD:
         	get_station_data(self, station)
         	return
 
-        
+        print("tID: " + str(t_id) + " | Current Data fetch: " + str(current_milli_time()-time))
+
+        time = current_milli_time()
 
         # Name der Historical-Files: tageswerte_KL_00001_19370101_19860630_hist.zip
         try:
@@ -420,6 +434,11 @@ class DWD:
           historicalValid = True
         except:
           print("I expected some data in the historical zip, but there was none!")
+
+
+        print("tID: " + str(t_id) + " | Historical Data fetch: " + str(current_milli_time()-time))
+
+
 
         zip_ref = zipfile.ZipFile(local_file + ".zip", 'r')
         zip_ref.extractall(local_file)
@@ -448,6 +467,10 @@ class DWD:
             shutil.rmtree(local_file_historical)
 
 
+
+
+
+
         with open(local_file + ".csv") as csvfile:
             readCSV = csv.reader(csvfile, delimiter=';')
             first_row = True
@@ -463,9 +486,12 @@ class DWD:
 
                     current_data.set_station_data(station.name, station.zip_code)
 
-                    data.append(current_data)
-                    self.write_to_file(current_data, False)
+                    recent_data.append(current_data)
+
                 i += 1
+
+
+        time = current_milli_time()
 
         if(historicalValid):
 
@@ -484,19 +510,22 @@ class DWD:
 
                         current_data.set_station_data(station.name, station.zip_code)
 
-                        for oldrow in data:
+
+
+                        for oldrow in recent_data:
                             if (oldrow.mess_datum == row[1]):
                                 break
                             else:
-                                self.write_to_file(current_data, True)
+                                hist_data.append(current_data)
                                 break
                     i += 1
             os.remove(local_file_historical + ".csv")
 
         os.remove(local_file + ".csv")
-
+        self.write_to_file(recent_data,hist_data)
 
         print(" -> ok", end='\r')
+        print("tID: " + str(t_id) + " |  Rest : " + str(current_milli_time()-time))
 
 
     def get_zip_code(lat, lon):
