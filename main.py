@@ -549,9 +549,9 @@ dwd = DWD()
 
 print("\n\nFetch data from DWD")
 print("-----------------------")
-file_name = input('output file: ')
-dwd.thread_count = int(input('threads: '))
-zip_flag = input('zipcodes (yes | no): ')
+file_name = "kannWeg"
+dwd.thread_count = 10
+zip_flag = "no"
 
 if zip_flag == 'yes':
     zip_flag = 1
