@@ -3,6 +3,7 @@ import zipfile
 import os
 import fnmatch
 import shutil
+import sys
 import csv
 import json
 import numpy as np
@@ -532,17 +533,19 @@ class DWD:
 
     def update_progress(self, progress):
 
-        print("|", end='')
+        sys.stdout.write("[")
 
         for i in range(0, 100):
             if(int(progress*100) < i):
-                print(' ', end='')
+                sys.stdout.write(" ")
             elif(int(progress*100) == i):
-                print("(" +str(int(progress*100))+ "%)=>", end='')
+                sys.stdout.write("(" +str(int(progress*100))+ "%)=>")
             else:
-                print('=', end='')
+                sys.stdout.write("=")
 
-        print('|', end='\r')
+        sys.stdout.write("]" + "\r")
+
+        sys.stdout.flush()
 
 
     def get_zip_code(lat, lon):
