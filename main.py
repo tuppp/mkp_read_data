@@ -9,6 +9,7 @@ import numpy as np
 import re
 import time
 import math
+import threading
 from threading import Lock, Thread
 from pathlib import Path
 
@@ -109,7 +110,6 @@ class DWD:
 
     thread_count = 10
     station_count = 0
-    lock = Lock()
     runs = 0
 
     file_prefix = "tageswerte_KL_"
@@ -189,7 +189,7 @@ class DWD:
                 end = (1 + i) * interval_len
 
             if len(self.stations) > i * interval_len + 1:
-                new_thread = Thread(target=self.get_station_data_from, args=(station_data, i * interval_len, end))
+                new_thread = Thread(target=self.get_station_data_from, args=(station_data, i * interval_len, end,i))
                 threads.append(new_thread)
                 new_thread.setDaemon(True)
                 new_thread.start()
@@ -303,9 +303,10 @@ class DWD:
                 self.stations.append(new_station)
                 self.station_count += 1
 
-    def get_station_data_from(self, station_data, start, end):
+    def get_station_data_from(self, station_data, start, end,ident):
         for i in range(start, end):
-              dwd.get_station_data(self.stations[i])
+        	print("Ich bin Thread: " + str(ident))
+        	dwd.get_station_data(self.stations[i])
 
 
     def concatenate_lists(self, station_data):
@@ -392,7 +393,7 @@ class DWD:
 
 
     def get_station_data(self, station):
-        print("fetch data from station: " + station.id, end='\r')
+        
         local_file = "station_" + station.id
         local_file_historical = "station_" + station.id + "_historical"
 
@@ -401,10 +402,15 @@ class DWD:
         historicalValid = False
 
         # Name der Recent-Files: tageswerte_KL_00044_akt.zip
-        urllib.request.urlretrieve(self.file_url + self.file_prefix + station.id + self.file_suffix,
-                                   local_file + ".zip")
-        print(
-            self.file_url_historical + self.file_prefix + station.id + "_" + station.recording_start + "_" + station.recording_mid + self.file_suffix_historical)
+        try:
+        	urllib.request.urlretrieve(self.file_url + self.file_prefix + station.id + self.file_suffix,local_file + ".zip")
+        except:
+        	print("zZ ",end='')
+        	time.sleep(1000)
+        	get_station_data(self, station)
+        	return
+
+        
 
         # Name der Historical-Files: tageswerte_KL_00001_19370101_19860630_hist.zip
         try:
@@ -478,7 +484,6 @@ class DWD:
 
                         current_data.set_station_data(station.name, station.zip_code)
 
-                        print(3)
                         for oldrow in data:
                             if (oldrow.mess_datum == row[1]):
                                 break
