@@ -523,7 +523,10 @@ class DWD:
             if(int(progress*100) < i):
                 sys.stdout.write(" ")
             elif(int(progress*100) == i):
-                sys.stdout.write("(" +str(int(progress*100)) + "% | " + str(int(estimated_time/1000)) + "sec)=>")
+                if(progress == 0.99):
+                    sys.stdout.write("(100%)=")
+                else:
+                    sys.stdout.write("(" +str(int(progress*100)) + "% | " + str(int(estimated_time/1000)) + "sec)=>")
             else:
                 sys.stdout.write("=")
 
