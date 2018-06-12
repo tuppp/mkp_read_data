@@ -112,6 +112,9 @@ class DWD:
     station_count = 0
     runs = 0
 
+    progress = 0
+    progress_end = 0
+
     file_prefix = "tageswerte_KL_"
     file_suffix = "_akt.zip"
     file_url = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/"
@@ -217,6 +220,8 @@ class DWD:
         print("-> done")
         print("[runtime: " + str(current_milli_time() - start_time) + " ms]")
 
+        print("-> exported " + str(len(full_list)) + " datasets from " + str(len(self.stations)) + " stations <-")
+
         print("\n\n")
 
         print("[complete runtime: " + str(current_milli_time() - start_time_glob) + " ms]")
@@ -229,8 +234,8 @@ class DWD:
     def write_to_file(self, recent_data, hist_data):
         file = None
 
-        recent_file = open("out_recent.csv", 'a')
-        hist_file = open("out_history.csv", 'a')
+        recent_file = open("out_historical.csv", 'a')
+        hist_file = open("out_recent.csv", 'a')
 
         for data in recent_data:
             recent_file.write(str(data.station_id) + ';' + str(data.station_name) + ';' + str(
@@ -312,7 +317,6 @@ class DWD:
 
     def get_station_data_from(self, station_data, start, end,ident):
         for i in range(start, end):
-        	print("Ich bin Thread: " + str(ident))
         	dwd.get_station_data(self.stations[i], ident)
 
 
@@ -391,6 +395,7 @@ class DWD:
             os.remove("temp")
 
             print("-> Found " + str(len(self.stations)) + " valid stations <-")
+            self.progress_end = len(self.stations)
 
             return self.stations
 
@@ -420,7 +425,6 @@ class DWD:
         	get_station_data(self, station)
         	return
 
-        print("tID: " + str(t_id) + " | Current Data fetch: " + str(current_milli_time()-time))
 
         time = current_milli_time()
 
@@ -434,7 +438,6 @@ class DWD:
           print("I expected some data in the historical zip, but there was none!")
 
 
-        print("tID: " + str(t_id) + " | Historical Data fetch: " + str(current_milli_time()-time))
 
 
 
@@ -519,11 +522,27 @@ class DWD:
                     i += 1
             os.remove(local_file_historical + ".csv")
 
+        self.progress+=1
+        self.update_progress(self.progress/self.progress_end)
         os.remove(local_file + ".csv")
         self.write_to_file(recent_data,hist_data)
 
-        print(" -> ok", end='\r')
-        print("tID: " + str(t_id) + " |  Rest : " + str(current_milli_time()-time))
+
+
+
+    def update_progress(self, progress):
+
+        print("|", end='')
+
+        for i in range(0, 100):
+            if(int(progress*100) < i):
+                print(' ', end='')
+            elif(int(progress*100) == i):
+                print("(" +str(int(progress*100))+ "%)=>", end='')
+            else:
+                print('=', end='')
+
+        print('|', end='\r')
 
 
     def get_zip_code(lat, lon):
