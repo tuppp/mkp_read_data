@@ -217,8 +217,6 @@ class DWD:
         print("-> done")
         print("[runtime: " + str(current_milli_time() - start_time) + " ms]")
 
-        print("-> exported " + str(len(full_list)) + " datasets from " + str(len(self.stations)) + " stations <-")
-
         print("\n\n")
 
         print("[complete runtime: " + str(current_milli_time() - start_time_glob) + " ms]")
@@ -231,8 +229,8 @@ class DWD:
     def write_to_file(self, recent_data, hist_data):
         file = None
 
-        recent_file = open("out_historical.csv", 'a')
-        hist_file = open("out_recent.csv", 'a')
+        recent_file = open("out_recent.csv", 'a')
+        hist_file = open("out_history.csv", 'a')
 
         for data in recent_data:
             recent_file.write(str(data.station_id) + ';' + str(data.station_name) + ';' + str(
