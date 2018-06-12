@@ -478,7 +478,6 @@ class DWD:
 
                         current_data.set_station_data(station.name, station.zip_code)
 
-                        print(3)
                         for oldrow in data:
                             if (oldrow.mess_datum == row[1]):
                                 break
