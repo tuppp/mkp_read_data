@@ -120,12 +120,12 @@ class DWD:
     station_list = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/KL_Tageswerte_Beschreibung_Stationen.txt"
 
     def get_zip_code_from_csv(self, station_id):
+        station_id = int(station_id)
+        station_id = str(station_id)
+        
         reader = csv.reader(open("geo_to_plz.csv", "r"), delimiter=",")
         x = list(reader)
         result = np.array(x).astype(str)
-        
-        if(type(station_id) != str):
-            station_id == str(station_id)
             
         for i in range(1,result.shape[0]):
             if result[i][0] == station_id:
