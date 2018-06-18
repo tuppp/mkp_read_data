@@ -214,8 +214,8 @@ class DWD:
     def write_to_file(self, recent_data, hist_data):
         file = None
 
-        recent_file = open("out_historical.csv", 'a')
-        hist_file = open("out_recent.csv", 'a')
+        recent_file = open("out_recent.csv", 'a')
+        hist_file = open("out_historical.csv", 'a')
 
         for data in recent_data:
             recent_file.write(str(data.station_id) + ';' + str(data.station_name) + ';' + str(
