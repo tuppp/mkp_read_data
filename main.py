@@ -13,6 +13,7 @@ import math
 import threading
 from threading import Lock, Thread
 from pathlib import Path
+import chardet
 
 current_milli_time = lambda: int(round(time.time() * 1000))
 
@@ -219,6 +220,7 @@ class DWD:
             data.rskf) + ';' + str(data.sdk) + ';' + str(data.shk_tag) + ';' + str(data.nm) + ';' + str(
             data.vpm) + ';' + str(data.pm) + ';' + str(data.tmk) + ';' + str(data.upm) + ';' + str(
             data.txk) + ';' + str(data.tnk) + ';' + str(data.tgk) + ';' + str(data.eor) + "\n"
+            recent_data.encode('iso-8859-1')
             recent_file.write(recent_data)
 
         recent_file.close()
@@ -230,6 +232,7 @@ class DWD:
             data.rskf) + ';' + str(data.sdk) + ';' + str(data.shk_tag) + ';' + str(data.nm) + ';' + str(
             data.vpm) + ';' + str(data.pm) + ';' + str(data.tmk) + ';' + str(data.upm) + ';' + str(
             data.txk) + ';' + str(data.tnk) + ';' + str(data.tgk) + ';' + str(data.eor) + "\n";
+            hist_data.encode('iso-8859-1')
             hist_file.write(hist_data)
 
         hist_file.close()
