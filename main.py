@@ -122,6 +122,10 @@ class DWD:
     file_suffix_historical = "_hist.zip"
     station_list = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/KL_Tageswerte_Beschreibung_Stationen.txt"
 
+
+
+    # get zipcode from prefetched zip list
+
     def get_zip_code_from_csv(self, station_id):
         station_id = int(station_id)
         station_id = str(station_id)
@@ -135,6 +139,10 @@ class DWD:
                 return result[i][3]
         return -1
 
+    ##
+
+
+    # get zip from geo data
 
     def get_zip_code_from_geo(self, lat, lng, apikey):
 
@@ -160,6 +168,8 @@ class DWD:
                     break
 
         return zip_code
+
+    ##
 
     def get_station_by_id(self, id, stations):
         for station in stations:
@@ -204,7 +214,6 @@ class DWD:
 
 
         return current_milli_time() - start_time_glob
-
     #
 
     def write_to_file(self, recent_data, hist_data):
@@ -294,12 +303,6 @@ class DWD:
         for i in range(start, end):
         	dwd.get_station_data(self.stations[i], ident)
 
-
-    def concatenate_lists(self, station_data):
-        completelist = []
-        for station in station_data:
-            completelist += station
-        return completelist
 
     def get_active_stations(self):
         req = urllib.request.Request('ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/')
@@ -571,7 +574,5 @@ dwd = DWD()
 
 print("\n\nFetch data from DWD")
 print("-----------------------")
-
-dwd.thread_count = 10
 
 dwd.get_weather_data()  # für alle: -1
