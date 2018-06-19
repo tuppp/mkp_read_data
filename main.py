@@ -16,27 +16,14 @@ from pathlib import Path
 
 current_milli_time = lambda: int(round(time.time() * 1000))
 
-class TempContainer:
-    id = None
-    mid = None
 
+class TempContainer:
     def __init__(self, id, mid):
         self.id = id
         self.mid = mid
 
 
 class Station:
-    id = None
-    recording_mid = None
-    recording_start = None
-    recording_end = None
-    height = None
-    latitude = None
-    longitude = None
-    name = None
-    state = None
-    zip_code = None
-
     def __init__(self, id, recording_start, recording_end, recording_mid, height, latitude, longitude, name, state):
         self.id = id
         self.recording_start = recording_start
@@ -47,35 +34,13 @@ class Station:
         self.longitude = longitude
         self.name = name
         self.state = state
+        self.zip_code = None
 
     def set_zip_code(self, zip_code):
         self.zip_code = zip_code
 
 
 class MeasuredData:
-    station_name = None
-    station_zip_code = None
-
-    station_id = None
-    mess_datum = None
-    qn_3 = None
-    fx = None
-    fm = None
-    qn_4 = None
-    rsk = None
-    rskf = None
-    sdk = None
-    shk_tag = None
-    nm = None
-    vpm = None
-    pm = None
-    tmk = None
-    upm = None
-    txk = None
-    tnk = None
-    tgk = None
-    eor = None
-
     def set_station_data(self, name, zip_code):
         self.station_name = name
         self.station_zip_code = zip_code
@@ -101,30 +66,65 @@ class MeasuredData:
         self.tnk = tnk
         self.tgk = tgk
         self.eor = eor
+        self.station_name = None
+        self.station_zip_code = None
 
+
+class ProgressBar:
+    def __init__(self):
+        self.value = 0
+        self.max_value = 1
+        self.start_time = 0
+
+    def set_max(self, max):
+        self.max_value = max
+
+    def increase(self):
+        self.set(self.value+1)
+
+    def set(self, progress):
+        self.value = progress
+
+    def show(self):
+        if(self.start_time == 0):
+            self.start_time = current_milli_time()
+
+        time_consumed = current_milli_time() - self.start_time
+        progress = self.value/self.max_value
+        estimated_time = (time_consumed / progress)-time_consumed
+
+        print('[', end='')
+        for i in range(0, 100):
+            if(int(progress*100) < i):
+                print(" ", end='')
+            elif(int(progress*100) == i):
+                if(progress == 0.99):
+                    print("(100%)=", end='')
+                else:
+                    print("(" +str(int(progress*100)) + "% | " + str(int(estimated_time/1000)) + "sec)=>", end='')
+            else:
+                print("=", end='')
+
+        print("]", end="\r")
 
 class DWD:
-    stations = []
-    NULL_TYPE = np.NaN
+    def __init__(self):
+        self.stations = []
+        self.NULL_TYPE = np.NaN
 
-    thread_count = 10
-    station_count = 0
-    runs = 0
+        self.thread_count = 10
+        self.station_count = 0
+        self.runs = 0
 
-    progress = 0
-    progress_end = 0
-    start_time = None
+        self.file_prefix = "tageswerte_KL_"
+        self.file_suffix = "_akt.zip"
+        self.file_suffix_historical = "_hist.zip"
 
-    file_prefix = "tageswerte_KL_"
-    file_suffix = "_akt.zip"
-    file_url = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/"
-    file_url_historical = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/historical/"
-    file_suffix_historical = "_hist.zip"
-    station_list = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/KL_Tageswerte_Beschreibung_Stationen.txt"
+        self.file_url = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/"
+        self.file_url_historical = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/historical/"
+        self.station_list = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/KL_Tageswerte_Beschreibung_Stationen.txt"
 
-
-
-    # get zipcode from prefetched zip list
+        self.progress_bar = ProgressBar();
 
     def get_zip_code_from_csv(self, station_id):
         station_id = int(station_id)
@@ -139,15 +139,8 @@ class DWD:
                 return result[i][3]
         return -1
 
-    ##
-
-
-    # get zip from geo data
-
     def get_zip_code_from_geo(self, lat, lng, apikey):
-
         zip_code = None
-
         contents = urllib.request.urlopen(
             "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + str(lat) + "," + str(
                 lng) + "&sensor=false&key=" + apikey)
@@ -166,10 +159,7 @@ class DWD:
                 if comp['types'][0] == 'postal_code':
                     zip_code = comp['long_name']
                     break
-
         return zip_code
-
-    ##
 
     def get_station_by_id(self, id, stations):
         for station in stations:
@@ -177,7 +167,6 @@ class DWD:
                 return station
         return None
 
-    # saves a list of cleaned weather data as csv
     def get_weather_data(self):
 
         self.start_time = current_milli_time();
@@ -187,6 +176,8 @@ class DWD:
         start_time = current_milli_time()
         self.stations = dwd.get_stations()
         print("[runtime: " + str(current_milli_time() - start_time) + " ms]")
+
+        self.progress_bar.set_max(len(self.stations))
 
         print("\n\n## Get weather data ##")
         station_data = []
@@ -214,7 +205,6 @@ class DWD:
 
 
         return current_milli_time() - start_time_glob
-    #
 
     def write_to_file(self, recent_data, hist_data):
 
@@ -250,8 +240,6 @@ class DWD:
         return None
 
     def get_stations_from(self, lines, active_stations, start, end):
-
-        # index ab 2!!!!
         apikeylist = ["AIzaSyBJ1HpXkBekg9Ek553aKSILi-d-q8RlFO8",
                       "AIzaSyDOu4NU_6awk4X08-JmN7yx70U-JclaRic",
                       "AIzaSyAojtE1GHYx1HvXSaMuK98RkeboisXL954"]
@@ -302,7 +290,6 @@ class DWD:
     def get_station_data_from(self, station_data, start, end,ident):
         for i in range(start, end):
         	dwd.get_station_data(self.stations[i], ident)
-
 
     def get_active_stations(self):
         req = urllib.request.Request('ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/')
@@ -374,11 +361,6 @@ class DWD:
 
             return self.stations
 
-
-
-
-
-
     def get_station_data(self, station, t_id):
 
         local_file = "station_" + station.id
@@ -412,15 +394,10 @@ class DWD:
         except:
           print("I expected some data in the historical zip, but there was none!")
 
-
-
-
-
         zip_ref = zipfile.ZipFile(local_file + ".zip", 'r')
         zip_ref.extractall(local_file)
         zip_ref.close()
         os.remove(local_file + ".zip")
-
 
         if(historicalValid):
             zip_ref2 = zipfile.ZipFile(local_file_historical + ".zip", 'r')
@@ -434,7 +411,6 @@ class DWD:
 
         shutil.rmtree(local_file)
 
-
         if(historicalValid):
             for file in os.listdir(local_file_historical):
                 if fnmatch.fnmatch(file, "produkt_klima_tag*"):
@@ -442,15 +418,8 @@ class DWD:
 
             shutil.rmtree(local_file_historical)
 
-
-
-
-
-
         with open(local_file + ".csv") as csvfile:
             readCSV = csv.reader(csvfile, delimiter=';')
-
-
             i = 0
             for row in readCSV:
                 if i >= 1:
@@ -462,18 +431,12 @@ class DWD:
                     current_data.set_station_data(station.name, station.zip_code)
 
                     recent_data.append(current_data)
-
                 i += 1
-
-
         time = current_milli_time()
 
         if(historicalValid):
-
             with open(local_file_historical + ".csv") as csvfile:
                 readCSV = csv.reader(csvfile, delimiter=';')
-
-
                 i = 0
                 for row in readCSV:
                     if i >= 1:
@@ -483,9 +446,6 @@ class DWD:
                                                     row[17], row[18])
 
                         current_data.set_station_data(station.name, station.zip_code)
-
-
-
                         for oldrow in recent_data:
                             if (oldrow.mess_datum == row[1]):
                                 break
@@ -495,38 +455,12 @@ class DWD:
                     i += 1
             os.remove(local_file_historical + ".csv")
 
-        self.progress+=1
-        self.update_progress(self.progress/self.progress_end)
+        self.progress_bar.increase()
+        self.progress_bar.show()
         os.remove(local_file + ".csv")
         self.write_to_file(recent_data,hist_data)
 
-
-
-
-    def update_progress(self, progress):
-
-        time_consumed = current_milli_time() - self.start_time
-
-        estimated_time = (time_consumed / progress)-time_consumed
-
-        print('[', end='')
-
-
-        for i in range(0, 100):
-            if(int(progress*100) < i):
-                print(" ", end='')
-            elif(int(progress*100) == i):
-                if(progress == 0.99):
-                    print("(100%)=", end='')
-                else:
-                    print("(" +str(int(progress*100)) + "% | " + str(int(estimated_time/1000)) + "sec)=>", end='')
-            else:
-                print("=", end='')
-
-        print("]", end="\r")
-
     def parse(self, row):
-
         for i in range(len(row)):
             row[i] = row[i].strip()
 
