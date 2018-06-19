@@ -127,8 +127,7 @@ class DWD:
 
 
     def get_zip_code_from_csv(self, station_id):
-        station_id = int(station_id)
-        station_id = str(station_id)
+        station_id = str(int(station_id))
 
         reader = csv.reader(open("geo_to_plz.csv", "r"), delimiter=",")
         x = list(reader)
