@@ -110,21 +110,19 @@ class ProgressBar:
 class DWD:
     def __init__(self):
         self.stations = []
-        self.NULL_TYPE = np.NaN
-
+        self.null_type = np.NaN
         self.thread_count = 10
-        self.station_count = 0
-        self.runs = 0
+        self.progress_bar = ProgressBar();
 
         self.file_prefix = "tageswerte_KL_"
         self.file_suffix = "_akt.zip"
         self.file_suffix_historical = "_hist.zip"
 
+        self.geo_api = "https://maps.googleapis.com/maps/api/geocode/json?latlng="
         self.file_url = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/"
         self.file_url_historical = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/historical/"
         self.station_list = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/KL_Tageswerte_Beschreibung_Stationen.txt"
 
-        self.progress_bar = ProgressBar();
 
     def get_zip_code_from_csv(self, station_id):
         station_id = int(station_id)
@@ -142,7 +140,7 @@ class DWD:
     def get_zip_code_from_geo(self, lat, lng, apikey):
         zip_code = None
         contents = urllib.request.urlopen(
-            "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + str(lat) + "," + str(
+            self.geo_api + str(lat) + "," + str(
                 lng) + "&sensor=false&key=" + apikey)
         j = json.load(contents)
 
@@ -248,16 +246,12 @@ class DWD:
 
         keyindex = 0
 
-
         for x in range(start, end):
-
             if x == 0 or x == 1:
                 continue
 
             line = re.sub(' +', ';', lines[x])
-
             line = line.split(';')
-
             container = self.get_active_station_by_id(active_stations, line[0])
 
             if (container == None):
@@ -278,7 +272,6 @@ class DWD:
                         keyindex += 1
                         zipc = self.get_zip_code_from_geo(new_station.latitude, new_station.longitude,
                                                           apikeylist[keyindex]);
-
                     if zipc == -2:
                         error_text = "-> error: query limit for all keys reached"
                         print(error_text)
@@ -289,7 +282,6 @@ class DWD:
                         new_station.set_zip_code(zipc)
 
                 self.stations.append(new_station)
-                self.station_count += 1
 
     def get_station_data_from(self, station_data, start, end,ident):
         for i in range(start, end):
@@ -309,7 +301,6 @@ class DWD:
 
         historic_ids = []
         historic_mids = []
-
 
         for item in html.split("_akt.zip"):
             if "tageswerte_KL_" in item:
@@ -338,9 +329,7 @@ class DWD:
 
         with open("temp", 'r', encoding='cp1252') as f:
             lines = f.readlines()
-
             interval_len = math.ceil(len(lines) / self.thread_count)
-
             threads = [];
 
             for i in range(self.thread_count):
@@ -348,7 +337,6 @@ class DWD:
                     end = len(lines) - 1
                 else:
                     end = (1 + i) * interval_len
-
                 if len(lines) > i * interval_len + 1:
                     new_thread = Thread(target=self.get_stations_from,
                                         args=(lines, active_stations, i * interval_len, end))
@@ -359,7 +347,6 @@ class DWD:
                 threads[i].join()
 
             os.remove("temp")
-
             print("-> Found " + str(len(self.stations)) + " valid stations <-")
             self.progress_end = len(self.stations)
 
@@ -369,10 +356,8 @@ class DWD:
 
         local_file = "station_" + station.id
         local_file_historical = "station_" + station.id + "_historical"
-
         recent_data = []
         hist_data = []
-
         historicalValid = False
 
         time = current_milli_time()
@@ -385,7 +370,6 @@ class DWD:
         	time.sleep(1000)
         	get_station_data(self, station)
         	return
-
 
         time = current_milli_time()
 
@@ -469,7 +453,7 @@ class DWD:
             row[i] = row[i].strip()
 
             if row[i] == "-999":
-                row[i] = self.NULL_TYPE
+                row[i] = self.null_type
 
         if row[7] == "0":
             row[7] = "kein NS"
