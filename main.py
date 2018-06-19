@@ -118,6 +118,9 @@ class DWD:
         self.file_suffix = "_akt.zip"
         self.file_suffix_historical = "_hist.zip"
 
+        self.recent_file_name = "out_recent.csv"
+        self.historic_file_name = "out_historical.csv"
+
         self.geo_api = "https://maps.googleapis.com/maps/api/geocode/json?latlng="
         self.file_url = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/"
         self.file_url_historical = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/historical/"
@@ -169,6 +172,12 @@ class DWD:
     def get_weather_data(self):
         start_time = current_milli_time()
 
+        if os.path.isfile(self.recent_file_name):
+            os.remove(self.recent_file_name)
+
+        if os.path.isfile(self.historic_file_name):
+            os.remove(self.historic_file_name)
+
         print("\n## Get stations ##")
         self.stations = dwd.get_stations()
         print("[runtime: " + str(current_milli_time() - start_time) + " ms]")
@@ -200,8 +209,8 @@ class DWD:
         return current_milli_time() - start_time
 
     def write_to_file(self, recent_data, hist_data):
-        recent_file = open("out_recent.csv", 'a')
-        hist_file = open("out_historical.csv", 'a')
+        recent_file = open(self.recent_file_name, 'a')
+        hist_file = open(self.historic_file_name, 'a')
 
         for data in recent_data:
             recent_data = str(data.station_id) + ';' + str(data.station_name) + ';' + str(
