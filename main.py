@@ -16,7 +16,6 @@ from pathlib import Path
 
 current_milli_time = lambda: int(round(time.time() * 1000))
 
-
 class TempContainer:
     id = None
     mid = None
@@ -106,7 +105,6 @@ class MeasuredData:
 
 class DWD:
     stations = []
-    zip_flag = 0
     NULL_TYPE = np.NaN
 
     thread_count = 10
@@ -170,10 +168,9 @@ class DWD:
         return None
 
     # saves a list of cleaned weather data as csv
-    def get_weather_data(self, zip_flag):
+    def get_weather_data(self):
 
         self.start_time = current_milli_time();
-        self.zip_flag = zip_flag
         start_time_glob = current_milli_time()
 
         print("\n## Get stations ##")
@@ -272,7 +269,7 @@ class DWD:
                 plz = self.get_zip_code_from_csv(new_station.id)
                 if plz != -1:
                     new_station.set_zip_code(plz)
-                if plz == -1 and self.zip_flag == 1:
+                if plz == -1:
                     zipc = self.get_zip_code_from_geo(new_station.latitude, new_station.longitude,
                                                       apikeylist[keyindex]);
 
@@ -574,13 +571,7 @@ dwd = DWD()
 
 print("\n\nFetch data from DWD")
 print("-----------------------")
-file_name = "kannWeg"
+
 dwd.thread_count = 10
-zip_flag = "no"
 
-if zip_flag == 'yes':
-    zip_flag = 1
-else:
-    zip_flag = 0
-
-dwd.get_weather_data(zip_flag)  # für alle: -1
+dwd.get_weather_data()  # für alle: -1
