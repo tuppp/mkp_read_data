@@ -212,22 +212,24 @@ class DWD:
         hist_file = open("out_historical.csv", 'a')
 
         for data in recent_data:
-            recent_file.write(str(data.station_id) + ';' + str(data.station_name) + ';' + str(
+            recent_data = str(data.station_id) + ';' + str(data.station_name) + ';' + str(
             data.station_zip_code) + ';' + str(data.mess_datum) + ';' + str(data.qn_3) + ';' + str(
             data.fx) + ';' + str(data.fm) + ';' + str(data.qn_4) + ';' + str(data.rsk) + ';' + str(
             data.rskf) + ';' + str(data.sdk) + ';' + str(data.shk_tag) + ';' + str(data.nm) + ';' + str(
             data.vpm) + ';' + str(data.pm) + ';' + str(data.tmk) + ';' + str(data.upm) + ';' + str(
-            data.txk) + ';' + str(data.tnk) + ';' + str(data.tgk) + ';' + str(data.eor) + "\n")
+            data.txk) + ';' + str(data.tnk) + ';' + str(data.tgk) + ';' + str(data.eor) + "\n"
+            recent_file.write(recent_data)
 
         recent_file.close()
 
         for data in hist_data:
-            hist_file.write(str(data.station_id) + ';' + str(data.station_name) + ';' + str(
+            hist_data = str(data.station_id) + ';' + str(data.station_name) + ';' + str(
             data.station_zip_code) + ';' + str(data.mess_datum) + ';' + str(data.qn_3) + ';' + str(
             data.fx) + ';' + str(data.fm) + ';' + str(data.qn_4) + ';' + str(data.rsk) + ';' + str(
             data.rskf) + ';' + str(data.sdk) + ';' + str(data.shk_tag) + ';' + str(data.nm) + ';' + str(
             data.vpm) + ';' + str(data.pm) + ';' + str(data.tmk) + ';' + str(data.upm) + ';' + str(
-            data.txk) + ';' + str(data.tnk) + ';' + str(data.tgk) + ';' + str(data.eor) + "\n")
+            data.txk) + ';' + str(data.tnk) + ';' + str(data.tgk) + ';' + str(data.eor) + "\n";
+            hist_file.write(hist_data)
 
         hist_file.close()
 
@@ -490,4 +492,4 @@ dwd = DWD()
 print("\n\nFetch data from DWD")
 print("-----------------------")
 
-dwd.get_weather_data()  # für alle: -1
+dwd.get_weather_data()
