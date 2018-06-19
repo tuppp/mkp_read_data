@@ -510,22 +510,21 @@ class DWD:
 
         estimated_time = (time_consumed / progress)-time_consumed
 
-        sys.stdout.write("[")
+        print('[', end='')
+
 
         for i in range(0, 100):
             if(int(progress*100) < i):
-                sys.stdout.write(" ")
+                print(" ", end='')
             elif(int(progress*100) == i):
                 if(progress == 0.99):
-                    sys.stdout.write("(100%)=")
+                    print("(100%)=", end='')
                 else:
-                    sys.stdout.write("(" +str(int(progress*100)) + "% | " + str(int(estimated_time/1000)) + "sec)=>")
+                    print("(" +str(int(progress*100)) + "% | " + str(int(estimated_time/1000)) + "sec)=>", end='')
             else:
-                sys.stdout.write("=")
+                print("=", end='')
 
-        sys.stdout.write("]" + "\r")
-
-        sys.stdout.flush()
+        print("]", end="\r")
 
 
 
