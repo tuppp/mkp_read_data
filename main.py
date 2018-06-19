@@ -122,6 +122,8 @@ class DWD:
         self.file_url = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/"
         self.file_url_historical = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/historical/"
         self.station_list = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/KL_Tageswerte_Beschreibung_Stationen.txt"
+        self.recent_url = 'ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/'
+
 
 
     def get_zip_code_from_csv(self, station_id):
@@ -166,12 +168,9 @@ class DWD:
         return None
 
     def get_weather_data(self):
-
-        self.start_time = current_milli_time();
-        start_time_glob = current_milli_time()
+        start_time = current_milli_time()
 
         print("\n## Get stations ##")
-        start_time = current_milli_time()
         self.stations = dwd.get_stations()
         print("[runtime: " + str(current_milli_time() - start_time) + " ms]")
 
@@ -179,7 +178,6 @@ class DWD:
 
         print("\n\n## Get weather data ##")
         station_data = []
-        start_time = current_milli_time()
 
         interval_len = math.ceil(len(self.stations) / self.thread_count)
 
@@ -200,12 +198,9 @@ class DWD:
         for i in range(len(threads)):
             threads[i].join()
 
-
-
-        return current_milli_time() - start_time_glob
+        return current_milli_time() - start_time
 
     def write_to_file(self, recent_data, hist_data):
-
         recent_file = open("out_recent.csv", 'a')
         hist_file = open("out_historical.csv", 'a')
 
@@ -233,14 +228,11 @@ class DWD:
 
     def get_active_station_by_id(self, active_stations, ida):
         for x in range(len(active_stations)):
-
             if active_stations[x].id == ida:
                 return active_stations[x]
-
         return None
 
     def get_stations_from(self, lines, active_stations, start, end):
-
         with open('api.keys', 'r') as f:
             apikeylist = f.readlines()
 
@@ -288,8 +280,8 @@ class DWD:
         	dwd.get_station_data(self.stations[i], ident)
 
     def get_active_stations(self):
-        req = urllib.request.Request('ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/')
-        req2 = urllib.request.Request('ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/historical/')
+        req = urllib.request.Request(self.recent_url)
+        req2 = urllib.request.Request(self.file_url_historical)
 
         with urllib.request.urlopen(req) as response:
             html = str(response.read())
@@ -353,7 +345,6 @@ class DWD:
             return self.stations
 
     def get_station_data(self, station, t_id):
-
         local_file = "station_" + station.id
         local_file_historical = "station_" + station.id + "_historical"
         recent_data = []
