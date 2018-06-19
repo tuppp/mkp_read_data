@@ -204,8 +204,7 @@ class DWD:
         for i in range(len(threads)):
             threads[i].join()
 
-   
-        self.intoCSV(full_list, file_name)
+
 
         return current_milli_time() - start_time_glob
 
@@ -530,7 +529,7 @@ class DWD:
             else:
                 sys.stdout.write("=")
 
-        sys.stdout.write("]" + "\r")
+        sys.stdout.write("]" + "\n" + "\r")
 
         sys.stdout.flush()
 
