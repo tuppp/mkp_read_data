@@ -170,7 +170,7 @@ class DWD:
         return None
 
     # saves a list of cleaned weather data as csv
-    def get_weather_data(self, file_name, zip_flag):
+    def get_weather_data(self, zip_flag):
 
         self.start_time = current_milli_time();
         self.zip_flag = zip_flag
@@ -211,7 +211,6 @@ class DWD:
     #
 
     def write_to_file(self, recent_data, hist_data):
-        file = None
 
         recent_file = open("out_recent.csv", 'a')
         hist_file = open("out_historical.csv", 'a')
@@ -320,7 +319,6 @@ class DWD:
         historic_ids = []
         historic_mids = []
 
-        historic_stations = []
 
         for item in html.split("_akt.zip"):
             if "tageswerte_KL_" in item:
@@ -349,8 +347,6 @@ class DWD:
 
         with open("temp", 'r', encoding='cp1252') as f:
             lines = f.readlines()
-
-            stations = []
 
             interval_len = math.ceil(len(lines) / self.thread_count)
 
@@ -453,8 +449,7 @@ class DWD:
 
         with open(local_file + ".csv") as csvfile:
             readCSV = csv.reader(csvfile, delimiter=';')
-            first_row = True
-            current_station = None
+
 
             i = 0
             for row in readCSV:
@@ -477,8 +472,7 @@ class DWD:
 
             with open(local_file_historical + ".csv") as csvfile:
                 readCSV = csv.reader(csvfile, delimiter=';')
-                first_row = True
-                current_station = None
+
 
                 i = 0
                 for row in readCSV:
@@ -529,14 +523,11 @@ class DWD:
             else:
                 sys.stdout.write("=")
 
-        sys.stdout.write("]" + "\n" + "\r")
+        sys.stdout.write("]" + "\r")
 
         sys.stdout.flush()
 
 
-    def get_zip_code(lat, lon):
-        zip_code = 0
-        return zip_code
 
     def intoCSV(self, list, f_name):
         file = open(f_name, 'w')
@@ -593,4 +584,4 @@ if zip_flag == 'yes':
 else:
     zip_flag = 0
 
-dwd.get_weather_data(file_name, zip_flag)  # für alle: -1
+dwd.get_weather_data(zip_flag)  # für alle: -1
