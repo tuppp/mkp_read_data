@@ -505,7 +505,6 @@ class DWD:
 
     def update_progress(self, progress):
 
-
         time_consumed = current_milli_time() - self.start_time
 
         estimated_time = (time_consumed / progress)-time_consumed
@@ -525,24 +524,6 @@ class DWD:
                 print("=", end='')
 
         print("]", end="\r")
-
-
-
-    def intoCSV(self, list, f_name):
-        file = open(f_name, 'w')
-
-        file.write(
-            "STATION_ID;STATION_NAME;STATION_ZIP;MESS_DATUM;Qualität ff;Max Wind;D-Windgeschw.;Qualität ff;NS-Menge;NS-Art;Sonnenst.;Schneehöhe;Bedeckung;Dampfdruck;Luftdruck;D-Temp;Rel. Feuchte;Max Temp.;Min Temp.;Boden Min Temp.;eor" + "\n")
-
-        for i in range(len(list)):
-            file.write(str(list[i].station_id) + ';' + str(list[i].station_name) + ';' + str(
-                list[i].station_zip_code) + ';' + str(list[i].mess_datum) + ';' + str(list[i].qn_3) + ';' + str(
-                list[i].fx) + ';' + str(list[i].fm) + ';' + str(list[i].qn_4) + ';' + str(list[i].rsk) + ';' + str(
-                list[i].rskf) + ';' + str(list[i].sdk) + ';' + str(list[i].shk_tag) + ';' + str(list[i].nm) + ';' + str(
-                list[i].vpm) + ';' + str(list[i].pm) + ';' + str(list[i].tmk) + ';' + str(list[i].upm) + ';' + str(
-                list[i].txk) + ';' + str(list[i].tnk) + ';' + str(list[i].tgk) + ';' + str(list[i].eor) + "\n")
-
-        file.close()
 
     def parse(self, row):
 
