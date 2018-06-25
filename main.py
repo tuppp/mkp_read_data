@@ -13,6 +13,7 @@ import math
 import threading
 from threading import Lock, Thread
 from pathlib import Path
+from socket import error as SocketError
 import chardet
 
 current_milli_time = lambda: int(round(time.time() * 1000))
@@ -101,6 +102,8 @@ class ProgressBar:
             elif(int(progress*100) == i):
                 if(progress == 0.99):
                     print("(100%)=", end='')
+                    if int(estimated_time/1000) == 0:
+                        print("\n")
                 else:
                     print("(" +str(int(progress*100)) + "% | " + str(int(estimated_time/1000)) + "sec)=>", end='')
             else:
@@ -126,7 +129,7 @@ class DWD:
         self.file_url = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/"
         self.file_url_historical = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/historical/"
         self.station_list = "ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/KL_Tageswerte_Beschreibung_Stationen.txt"
-        self.recent_url = 'ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/'
+
 
 
 
@@ -199,7 +202,7 @@ class DWD:
                 end = (1 + i) * interval_len
 
             if len(self.stations) > i * interval_len + 1:
-                new_thread = Thread(target=self.get_station_data_from, args=(station_data, i * interval_len, end,i))
+                new_thread = Thread(target=self.get_station_data_from, args=( i * interval_len, end, i))
                 threads.append(new_thread)
                 new_thread.setDaemon(True)
                 new_thread.start()
@@ -262,7 +265,7 @@ class DWD:
 
             new_station = Station(line[0], line[1], line[2], container.mid, line[3], line[4], line[5], line[6], line[7])
 
-            if self.get_active_station_by_id(active_stations, new_station.id) != None:
+            if self.get_active_station_by_id(active_stations, new_station.id) is not None:
 
                 plz = self.get_zip_code_from_csv(new_station.id)
                 if plz != -1:
@@ -286,12 +289,12 @@ class DWD:
 
                 self.stations.append(new_station)
 
-    def get_station_data_from(self, station_data, start, end,ident):
+    def get_station_data_from(self, start, end,ident):
         for i in range(start, end):
-        	dwd.get_station_data(self.stations[i], ident)
+            dwd.get_station_data(self.stations[i], ident)
 
     def get_active_stations(self):
-        req = urllib.request.Request(self.recent_url)
+        req = urllib.request.Request(self.file_url)
         req2 = urllib.request.Request(self.file_url_historical)
 
         with urllib.request.urlopen(req) as response:
@@ -362,18 +365,23 @@ class DWD:
         hist_data = []
         historicalValid = False
 
-        time = current_milli_time()
+        time0 = current_milli_time()
 
         # Name der Recent-Files: tageswerte_KL_00044_akt.zip
         try:
-        	urllib.request.urlretrieve(self.file_url + self.file_prefix + station.id + self.file_suffix,local_file + ".zip")
-        except:
-        	print("zZ ",end='')
-        	time.sleep(1000)
-        	get_station_data(self, station)
-        	return
+            urllib.request.urlretrieve(self.file_url + self.file_prefix + station.id + self.file_suffix,local_file + ".zip")
+        except SocketError:
+            print("Connection Refused: Retrying ...                                                                   \n", end='')
+            time.sleep(4)
+            self.get_station_data(station, t_id)
+            return
+        except Exception:
+            print("zZ ",end='')
+            time.sleep(1)
+            self.get_station_data(station, t_id)
+            return
 
-        time = current_milli_time()
+        time0 = current_milli_time()
 
         # Name der Historical-Files: tageswerte_KL_00001_19370101_19860630_hist.zip
         try:
@@ -381,8 +389,8 @@ class DWD:
               self.file_url_historical + self.file_prefix + station.id + "_" + station.recording_start + "_" + station.recording_mid + self.file_suffix_historical,
               local_file_historical + ".zip")
           historicalValid = True
-        except:
-          print("I expected some data in the historical zip, but there was none!")
+        except Exception:
+          print("I expected some data in the historical zip, but there was none!                                                ")
 
         zip_ref = zipfile.ZipFile(local_file + ".zip", 'r')
         zip_ref.extractall(local_file)
@@ -422,7 +430,7 @@ class DWD:
 
                     recent_data.append(current_data)
                 i += 1
-        time = current_milli_time()
+        time0 = current_milli_time()
 
         if(historicalValid):
             with open(local_file_historical + ".csv") as csvfile:
