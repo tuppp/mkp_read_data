@@ -396,7 +396,7 @@ class DWD:
               local_file_historical + ".zip")
           historicalValid = True
         except Exception:
-          print("I expected some data in the historical zip, but there was none!                                                ")
+          abc = 0
 
         zip_ref = zipfile.ZipFile(local_file + ".zip", 'r')
         zip_ref.extractall(local_file)
