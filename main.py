@@ -96,7 +96,7 @@ class ProgressBar:
         estimated_time = (time_consumed / progress)-time_consumed
 
         print('[', end='')
-        for i in range(0, 100):
+        for i in range(0, 101):
             if(int(progress*100) < i):
                 print(" ", end='')
             elif(int(progress*100) == i):
