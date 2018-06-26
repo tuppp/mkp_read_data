@@ -265,8 +265,9 @@ class DWD:
 
 
             laenge = len(line)
+            nameOrt = ""
             for x in range(6,laenge-1):
-                nameOrt += line[x]
+                nameOrt += str(line[x])
 
             new_station = Station(line[0], line[1], line[2], container.mid, line[3], line[4], line[5], nameOrt, line[laenge-1])
 
