@@ -165,7 +165,9 @@ def patafix():
     glue = pd.DataFrame([])
     glue = glue.append(hist)
     glue = glue.append(rec)
-    glue.to_csv("final.csv", header=None, index=None, sep=";")
+    glue = glue.replace(r'^\s+$', "nan", regex=True)
+    glue = glue.replace(np.nan, "nan", regex=True)
+    glue.to_csv("final.csv", header=["STATION_ID", "STATION_NAME", "STATION_ZIP", "MESS_DATUM", "Qualität ff", "Max Wind", "D-Windgeschw.", "Qualität ff", "NS-Menge", "NS-Art", "Sonnenst.", "Schneehöhe", "Bedeckung", "Dampfdruck", "Luftdruck", "D-Temp", "Rel. Feuchte", "Max Temp.", "Min Temp.", "Boden Min Temp.", "eor "], index=None, sep=";")
 
 def main():
     """download_file_locally("ftp://ftp-cdc.dwd.de/pub/CDC/observations_germany/climate/daily/kl/recent/KL_Tageswerte_Beschreibung_Stationen.txt", "data.csv")
