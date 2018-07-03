@@ -17,6 +17,7 @@ from socket import error as SocketError
 import chardet
 import pandas as pd
 
+
 current_milli_time = lambda: int(round(time.time() * 1000))
 
 
@@ -74,10 +75,12 @@ class MeasuredData:
 
 
 class ProgressBar:
+
     def __init__(self):
         self.value = 0
         self.max_value = 1
-        self.start_time = 0
+        self.start_time = 0   
+        self.lock = threading.Lock()
 
     def set_max(self, max):
         self.max_value = max
@@ -89,6 +92,10 @@ class ProgressBar:
         self.value = progress
 
     def show(self):
+
+        
+        self.lock.acquire()
+
         if(self.start_time == 0):
             self.start_time = current_milli_time()
 
@@ -96,21 +103,28 @@ class ProgressBar:
         progress = self.value/self.max_value
         estimated_time = (time_consumed / progress)-time_consumed
 
+
+        hint = "(" +str(int(progress*100)) + "% | " + str(int(estimated_time/1000)) + "sec)=>"
+
+        width = shutil.get_terminal_size().columns-len(hint)-2;
+
+        write = sys.stdout.write
+
+        write("\b"*(width*2))
+        sys.stdout.flush()
+        
+
         print('[', end='')
-        for i in range(0, 101):
-            if(int(progress*100) < i):
+        for i in range(0, width+1):
+            if(int(progress*width) < i):
                 print(" ", end='')
-            elif(int(progress*100) == i):
-                if(progress == 0.99):
-                    print("(100%)=", end='')
-                    if int(estimated_time/1000) == 0:
-                        print("\n")
-                else:
-                    print("(" +str(int(progress*100)) + "% | " + str(int(estimated_time/1000)) + "sec)=>", end='')
+            elif(int(progress*width) == i):
+                print(hint, end='')
             else:
                 print("=", end='')
 
-        print("]", end="\r")
+        print("]",end='')
+        self.lock.release()
 
 class DWD:
     def __init__(self):
@@ -198,7 +212,7 @@ class DWD:
 
         for i in range(self.thread_count):
             if i == self.thread_count - 1:
-                end = len(self.stations) - 1
+                end = len(self.stations) 
             else:
                 end = (1 + i) * interval_len
 
@@ -317,7 +331,7 @@ class DWD:
 
                 self.stations.append(new_station)
 
-    def get_station_data_from(self, start, end,ident):
+    def get_station_data_from(self, start, end,ident):        
         for i in range(start, end):
             dwd.get_station_data(self.stations[i], ident)
 
@@ -399,7 +413,6 @@ class DWD:
         try:
             urllib.request.urlretrieve(self.file_url + self.file_prefix + station.id + self.file_suffix,local_file + ".zip")
         except SocketError:
-            print("Connection Refused: Retrying ...                                                                   \n", end='')
             time.sleep(4)
             self.get_station_data(station, t_id)
             return
