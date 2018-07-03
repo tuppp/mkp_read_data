@@ -120,6 +120,8 @@ class ProgressBar:
                 print(" ", end='')
             elif(int(progress*width) == i):
                 print(hint, end='')
+                if(progress == 1):
+                    print("\n[runtime: " + str(int((current_milli_time()-self.start_time)/1000))+ " s]")
             else:
                 print("=", end='')
 
