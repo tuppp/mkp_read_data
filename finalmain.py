@@ -81,6 +81,7 @@ class ProgressBar:
         self.max_value = 1
         self.start_time = 0   
         self.lock = threading.Lock()
+        self.flag = False
 
     def set_max(self, max):
         self.max_value = max
@@ -101,10 +102,12 @@ class ProgressBar:
 
         time_consumed = current_milli_time() - self.start_time
         progress = self.value/self.max_value
-        estimated_time = (time_consumed / progress)-time_consumed
+        estimated_time = ((time_consumed / progress)-time_consumed)/1000
 
+        min = int(estimated_time/60)
+        sec = int(estimated_time%60)
 
-        hint = "(" +str(int(progress*100)) + "% | " + str(int(estimated_time/1000)) + "sec)=>"
+        hint = "(" +str(int(progress*100)) + "% | " + str(min)+" minutes and "+str(sec)+ " seconds)"
 
         width = shutil.get_terminal_size().columns-len(hint)-2;
 
@@ -114,18 +117,24 @@ class ProgressBar:
         sys.stdout.flush()
         
 
-        print('[', end='')
+        print(' ', end='')
         for i in range(0, width+1):
             if(int(progress*width) < i):
                 print(" ", end='')
             elif(int(progress*width) == i):
                 print(hint, end='')
                 if(progress == 1):
-                    print("\n[runtime: " + str(int((current_milli_time()-self.start_time)/1000))+ " s]")
+                    readableStart = (current_milli_time()-self.start_time)/1000
+                    min = int(readableStart/60)
+                    sec = int(readableStart%60)
+                    print("\n[runtime: " + str(min)+ " minutes and "+str(sec)+" seconds]")
+                    self.flag = True
             else:
-                print("=", end='')
+                print("█", end='')
 
-        print("]",end='')
+        if(self.flag == False):
+            print(" ",end='')
+
         self.lock.release()
 
 class DWD:
