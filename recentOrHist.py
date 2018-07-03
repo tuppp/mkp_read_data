@@ -615,6 +615,10 @@ if e == "r":
     onlyrecent = True
 else:
     print("I get you all data")
-print("Here is your popcorn, please enjoy our beautiful progress bar")
-
+print("Here is your popcorn, please enjoy our beautiful progress bar.")
+time.sleep(4)
+print("For the best possible experience, please change to fullscreen mode.")
+time.sleep(2)
+print("(now imagine the 20th century fox intro)")
+time.sleep(5)
 dwd.get_weather_data()
