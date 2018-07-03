@@ -177,6 +177,7 @@ class DWD:
     def get_weather_data(self):
         start_time = current_milli_time()
 
+        #if onlyrecent == true
         if os.path.isfile(self.recent_file_name):
             os.remove(self.recent_file_name)
 
@@ -190,11 +191,10 @@ class DWD:
         self.progress_bar.set_max(len(self.stations))
 
         print("\n\n## Get weather data ##")
-        station_data = []
 
         interval_len = math.ceil(len(self.stations) / self.thread_count)
 
-        threads = [];
+        threads = []
 
         for i in range(self.thread_count):
             if i == self.thread_count - 1:
@@ -384,7 +384,7 @@ class DWD:
             for x in range(6,laenge-2):
                 nameOrt += str(line[x])
                 if(x != laenge-3):
-                	nameOrt += " "
+                    nameOrt += " "
 
             new_station = Station(line[0], line[1], line[2], container.mid, line[3], line[4], line[5], nameOrt, line[laenge-1])
 
@@ -418,13 +418,16 @@ class DWD:
 
     def get_active_stations(self):
         req = urllib.request.Request(self.file_url)
-        req2 = urllib.request.Request(self.file_url_historical)
 
         with urllib.request.urlopen(req) as response:
             html = str(response.read())
 
-        with urllib.request.urlopen(req2) as response2:
-            html2 = str(response2.read())
+        if onlyrecent == False:
+            req2 = urllib.request.Request(self.file_url_historical)
+
+            with urllib.request.urlopen(req2) as response2:
+                html2 = str(response2.read())
+
 
         active_stations = []
 
@@ -437,17 +440,19 @@ class DWD:
                 tc = TempContainer(id, None)
                 active_stations.append(tc)
 
-        for item in html2.split("_hist.zip"):
-            if "tageswerte_KL_" in item:
-                raw = item[item.find("tageswerte_KL_") + len("tageswerte_KL_"):]
-                id = raw[:5]
-                mid = raw[15:23]
-                historic_ids.append(id)
-                historic_mids.append(mid)
 
-        for i in range(len(active_stations)):
-            mid = historic_mids[historic_ids.index(active_stations[i].id)]
-            active_stations[i].mid = mid
+        if onlyrecent == False:
+            for item in html2.split("_hist.zip"):
+                if "tageswerte_KL_" in item:
+                    raw = item[item.find("tageswerte_KL_") + len("tageswerte_KL_"):]
+                    id = raw[:5]
+                    mid = raw[15:23]
+                    historic_ids.append(id)
+                    historic_mids.append(mid)
+
+                    for i in range(len(active_stations)):
+                        mid = historic_mids[historic_ids.index(active_stations[i].id)]
+                        active_stations[i].mid = mid
 
         return active_stations
 
@@ -459,7 +464,7 @@ class DWD:
         with open("temp", 'r', encoding='cp1252') as f:
             lines = f.readlines()
             interval_len = math.ceil(len(lines) / self.thread_count)
-            threads = [];
+            threads = []
 
             for i in range(self.thread_count):
                 if i == self.thread_count - 1:
@@ -561,7 +566,7 @@ class DWD:
                 i = 0
                 for row in readCSV:
                     if i >= 1:
-                        row = self.parse(row);
+                        row = self.parse(row)
                         current_data = MeasuredData(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8],
                                                     row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16],
                                                     row[17], row[18])
