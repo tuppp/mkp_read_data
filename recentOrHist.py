@@ -450,9 +450,10 @@ class DWD:
                     historic_ids.append(id)
                     historic_mids.append(mid)
 
-                    for i in range(len(active_stations)):
-                        mid = historic_mids[historic_ids.index(active_stations[i].id)]
-                        active_stations[i].mid = mid
+        if onlyrecent == False:
+            for i in range(len(active_stations)):
+                mid = historic_mids[historic_ids.index(active_stations[i].id)]
+                active_stations[i].mid = mid
 
         return active_stations
 
