@@ -17,36 +17,40 @@ from socket import error as SocketError
 import chardet
 import pandas as pd
 
+
 current_milli_time = lambda: int(round(time.time() * 1000))
 onlyrecent = False
 def newrecents():
-    with open('recent.csv', 'r') as t1, open('out_recent.csv', 'r') as t2:
-        fileone = t1.readlines()
-        filetwo = t2.readlines()
-        nol = len(filetwo)
-        i = 1
+    try:
+        with open('recent.csv', 'r') as t1, open('out_recent.csv', 'r') as t2:
+            fileone = t1.readlines()
+            filetwo = t2.readlines()
+            nol = len(filetwo)
+            i = 1
 
-    with open('update.csv', 'w') as outFile:
-        for line in filetwo:
-            print(i, "/", nol)
-            i = i +1
-            if line not in fileone:
-                outFile.write(line)
-        outFile.flush()
-    old = pd.read_csv("recent.csv", sep= ";", header= None, dtype=str)
-    update = pd.read_csv("update.csv", sep= ";", header= None, dtype=str)
-    glue = pd.DataFrame([])
-    glue = glue.append(old)
-    glue = glue.append(update)
+        with open('update.csv', 'w') as outFile:
+            for line in filetwo:
+                print(i, "/", nol)
+                i = i +1
+                if line not in fileone:
+                    outFile.write(line)
+            outFile.flush()
+        old = pd.read_csv("recent.csv", sep= ";", header= None, dtype=str)
+        update = pd.read_csv("update.csv", sep= ";", header= None, dtype=str)
+        glue = pd.DataFrame([])
+        glue = glue.append(old)
+        glue = glue.append(update)
 
-    glue.to_csv("recent.csv",
-                         header=None, index=None, sep=";")
-    update.to_csv("update.csv",
-                         header=["STATION_ID", "STATION_NAME", "STATION_ZIP", "MESS_DATUM", "Qualität ff", "Max Wind",
-                                 "D-Windgeschw.", "Qualität ff", "NS-Menge", "NS-Art", "Sonnenst.", "Schneehöhe",
-                                 "Bedeckung", "Dampfdruck", "Luftdruck", "D-Temp", "Rel. Feuchte", "Max Temp.",
-                                 "Min Temp.",
-                                 "Boden Min Temp.", "eor"], index=None, sep=";")
+        glue.to_csv("recent.csv",
+                             header=None, index=None, sep=";")
+        update.to_csv("update.csv",
+                             header=["STATION_ID", "STATION_NAME", "STATION_ZIP", "MESS_DATUM", "Qualität ff", "Max Wind",
+                                     "D-Windgeschw.", "Qualität ff", "NS-Menge", "NS-Art", "Sonnenst.", "Schneehöhe",
+                                     "Bedeckung", "Dampfdruck", "Luftdruck", "D-Temp", "Rel. Feuchte", "Max Temp.",
+                                     "Min Temp.",
+                                     "Boden Min Temp.", "eor"], index=None, sep=";")
+    except:
+        pass
 
 
 def realpatafix():
@@ -191,7 +195,7 @@ def patafix():
     time.sleep(3)
     print("(whoop whoop!)")
     os.remove("out_recent.csv")
-    os.remove("out_historical.csv")
+
 class TempContainer:
     def __init__(self, id, mid):
         self.id = id
@@ -373,7 +377,6 @@ class DWD:
     def get_weather_data(self):
         start_time = current_milli_time()
 
-        #if onlyrecent == true
         if os.path.isfile(self.recent_file_name):
             os.remove(self.recent_file_name)
 
@@ -387,14 +390,15 @@ class DWD:
         self.progress_bar.set_max(len(self.stations))
 
         print("\n\n## Get weather data ##")
+        station_data = []
 
         interval_len = math.ceil(len(self.stations) / self.thread_count)
 
-        threads = []
+        threads = [];
 
         for i in range(self.thread_count):
             if i == self.thread_count - 1:
-                end = len(self.stations) - 1
+                end = len(self.stations) 
             else:
                 end = (1 + i) * interval_len
 
@@ -410,9 +414,8 @@ class DWD:
 
 
 
-    def write_to_file(self, recent_data, hist_data):
-        
 
+    def write_to_file(self, recent_data, hist_data):
         if onlyrecent:
             recent_file = open(self.recent_file_name, 'a')
             for data in recent_data:
@@ -482,8 +485,6 @@ class DWD:
             nameOrt = ""
             for x in range(6,laenge-2):
                 nameOrt += str(line[x])
-                if(x != laenge-3):
-                    nameOrt += " "
 
             new_station = Station(line[0], line[1], line[2], container.mid, line[3], line[4], line[5], nameOrt, line[laenge-1])
 
@@ -511,22 +512,19 @@ class DWD:
 
                 self.stations.append(new_station)
 
-    def get_station_data_from(self, start, end,ident):
+    def get_station_data_from(self, start, end,ident):        
         for i in range(start, end):
             dwd.get_station_data(self.stations[i], ident)
 
     def get_active_stations(self):
         req = urllib.request.Request(self.file_url)
+        req2 = urllib.request.Request(self.file_url_historical)
 
         with urllib.request.urlopen(req) as response:
             html = str(response.read())
 
-        if onlyrecent == False:
-            req2 = urllib.request.Request(self.file_url_historical)
-
-            with urllib.request.urlopen(req2) as response2:
-                html2 = str(response2.read())
-
+        with urllib.request.urlopen(req2) as response2:
+            html2 = str(response2.read())
 
         active_stations = []
 
@@ -539,19 +537,17 @@ class DWD:
                 tc = TempContainer(id, None)
                 active_stations.append(tc)
 
+        for item in html2.split("_hist.zip"):
+            if "tageswerte_KL_" in item:
+                raw = item[item.find("tageswerte_KL_") + len("tageswerte_KL_"):]
+                id = raw[:5]
+                mid = raw[15:23]
+                historic_ids.append(id)
+                historic_mids.append(mid)
 
-        if onlyrecent == False:
-            for item in html2.split("_hist.zip"):
-                if "tageswerte_KL_" in item:
-                    raw = item[item.find("tageswerte_KL_") + len("tageswerte_KL_"):]
-                    id = raw[:5]
-                    mid = raw[15:23]
-                    historic_ids.append(id)
-                    historic_mids.append(mid)
-
-            for i in range(len(active_stations)):
-                mid = historic_mids[historic_ids.index(active_stations[i].id)]
-                active_stations[i].mid = mid
+        for i in range(len(active_stations)):
+            mid = historic_mids[historic_ids.index(active_stations[i].id)]
+            active_stations[i].mid = mid
 
         return active_stations
 
@@ -563,7 +559,7 @@ class DWD:
         with open("temp", 'r', encoding='cp1252') as f:
             lines = f.readlines()
             interval_len = math.ceil(len(lines) / self.thread_count)
-            threads = []
+            threads = [];
 
             for i in range(self.thread_count):
                 if i == self.thread_count - 1:
@@ -664,7 +660,7 @@ class DWD:
                 i = 0
                 for row in readCSV:
                     if i >= 1:
-                        row = self.parse(row)
+                        row = self.parse(row);
                         current_data = MeasuredData(row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8],
                                                     row[9], row[10], row[11], row[12], row[13], row[14], row[15], row[16],
                                                     row[17], row[18])
