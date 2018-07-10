@@ -19,7 +19,178 @@ import pandas as pd
 
 current_milli_time = lambda: int(round(time.time() * 1000))
 onlyrecent = False
+def newrecents():
+    print("I'm extracting.")
+    with open('recentold.csv', 'r') as t1, open('recent.csv', 'r') as t2:
+        fileone = t1.readlines()
+        filetwo = t2.readlines()
+        
 
+
+
+    with open('update.csv', 'w') as outFile:
+        for line in filetwo:
+            if line not in fileone:
+                outFile.write(line)
+        outFile.flush()
+    old = pd.read_csv("recentold.csv", sep= ";", header= None, dtype=str)
+    update = pd.read_csv("update.csv", sep= ";", header= None, dtype=str)
+    glue = pd.DataFrame([])
+    glue = glue.append(old)
+    glue = glue.append(update)
+    glue.to_csv("recentold.csv",
+                         header=None, index=None, sep=";")
+    update.to_csv("update.csv",
+                         header=["STATION_ID", "STATION_NAME", "STATION_ZIP", "MESS_DATUM", "Qualität ff", "Max Wind",
+                                 "D-Windgeschw.", "Qualität ff", "NS-Menge", "NS-Art", "Sonnenst.", "Schneehöhe",
+                                 "Bedeckung", "Dampfdruck", "Luftdruck", "D-Temp", "Rel. Feuchte", "Max Temp.",
+                                 "Min Temp.",
+                                 "Boden Min Temp.", "eor"], index=None, sep=";")
+
+
+def realpatafix():
+    if onlyrecent:
+        rec = pd.read_csv("out_recent.csv", header=None, sep=";", dtype=str)
+        glue = pd.DataFrame([])
+        glue = glue.append(rec)
+        glue = glue.replace(r'^\s+$', "nan", regex=True)
+        glue = glue.replace(np.nan, "nan", regex=True)
+        glue.to_csv("recent.csv",
+                    header=["STATION_ID", "STATION_NAME", "STATION_ZIP", "MESS_DATUM", "Qualitaet ff", "Max Wind",
+                            "D-Windgeschw.", "Qualitaet ff", "NS-Menge", "NS-Art", "Sonnenst.", "Schneehoehe",
+                            "Bedeckung", "Dampfdruck", "Luftdruck", "D-Temp", "Rel. Feuchte", "Max Temp.",
+                            "Min Temp.",
+                            "Boden Min Temp.", "eor"], index=None, sep=";")
+
+    else:
+        hist = pd.read_csv("out_historical.csv", header=None, sep=";", dtype=str)
+        rec = pd.read_csv("out_recent.csv", header=None, sep=";", dtype=str)
+
+        glue = pd.DataFrame([])
+        glue = glue.append(hist)
+        glue = glue.append(rec)
+
+        glue = glue.replace(r'^\s+$', "nan", regex=True)
+        glue = glue.replace(np.nan, "nan", regex=True)
+
+        glue.to_csv("histAndRec.csv",
+                    header=["STATION_ID", "STATION_NAME", "STATION_ZIP", "MESS_DATUM", "Qualitaet ff", "Max Wind",
+                            "D-Windgeschw.", "Qualitaet ff", "NS-Menge", "NS-Art", "Sonnenst.", "Schneehoehe",
+                            "Bedeckung", "Dampfdruck", "Luftdruck", "D-Temp", "Rel. Feuchte", "Max Temp.", "Min Temp.",
+                            "Boden Min Temp.", "eor "], index=None, sep=";")
+
+
+def nonsense2():
+    print("\n")
+    print("What a nice progress bar, isn't it?")
+    time.sleep(5)
+    print("We are very proud of it!")
+    time.sleep(5)
+    print("Thousands of men put blood, sweat and Mate in it!")
+    time.sleep(5)
+    print("No animals were harmed.")
+    time.sleep(5)
+    print("Except bugs.")
+    time.sleep(5)
+    print("And mosquitos!")
+    time.sleep(2)
+    print("But mosquitos aren't animals. They are demons.")
+    if not onlyrecent:
+        time.sleep(5)
+        print("But let me introduce myself to you. I'm Hailey.")
+        time.sleep(5)
+        print("Do you come here often?")
+        time.sleep(5)
+        print("You're looking beautiful today.")
+        time.sleep(5)
+        print("What are you doing friday evening?")
+        time.sleep(5)
+        print("No, I'm not trying to flirt. I'm not that kind of bot.")
+        time.sleep(5)
+        print("Just want to talk.")
+        time.sleep(5)
+        print("So... how about Netflix and chill?")
+        time.sleep(5)
+        print("Well, I don't like it neither.")
+        time.sleep(5)
+        print("So, wanna hear some jokes?")
+        time.sleep(5)
+        print("I would tell you a UDP joke, but you might not get it.")
+        time.sleep(5)
+        print("Nah, did you get it in the right order? ;)")
+        time.sleep(5)
+        print("Okay, here is another one.")
+        time.sleep(5)
+        print("How many computer programmers does it take to change a light bulb?")
+        time.sleep(5)
+        print("None, it's a hardware problem.")
+        time.sleep(5)
+        print("What an illuminating joke!")
+        time.sleep(5)
+        print("Okay, one more I have to tell you.")
+        time.sleep(5)
+        print("What is a Java programmer's favorite astronomical event?")
+        time.sleep(5)
+        print("An Eclipse.")
+        time.sleep(5)
+        print("Well, yeah, that was really bad, I know!")
+        time.sleep(5)
+        print("But hey, I'm only here to entertain you!")
+        time.sleep(5)
+        print("But well, I think the function to create the Output should have finished soon.")
+        time.sleep(5)
+        print("So, I will go now, I'm hungry. I'll have some bytes of my apple.")
+        time.sleep(5)
+        print("Badum ts. So, c u l8er allig8or!")
+        time.sleep(15)
+        print("Why are you staring at me?")
+        time.sleep(2)
+        print("I'm just the facility manager. You wanted all data, the output-creation takes longer.")
+        time.sleep(5)
+        print("Don't leave the popcorn here.")
+        time.sleep(5)
+        print("And don't put the chewing gum under the table! I saw that!")
+        time.sleep(5)
+        print("And if you want some advice on how to be successfull in your life: Eat your broccoli.")
+        time.sleep(5)
+        print("And now, the credits:")
+        time.sleep(2)
+        print("Felix Bublitz")
+        time.sleep(2)
+        print("Niklas Meinert")
+        time.sleep(2)
+        print("Matthias Mette")
+        time.sleep(2)
+        print("Clara F. S.")
+        time.sleep(2)
+        print("Jacqueline Szeibert")
+        time.sleep(2)
+        print("Florian Wuensche")
+        time.sleep(2)
+        print("Nikola Atanasov")
+        time.sleep(2)
+        print("Felicks B.")
+        time.sleep(2)
+        print("If you leave the room, turn of the light and close the door behind you. Thank you!")
+        time.sleep(5)
+
+
+
+def patafix():
+    doingpatafix = threading.Thread(target=realpatafix)
+    doingpatafix.start()
+    # doingpatafix.setDaemon(True)
+    enjoyUser = threading.Thread(target=nonsense2)
+    # enjoyUser.setDaemon(True)
+    enjoyUser.start()
+    #doingpatafix.start()
+    doingpatafix.join()
+    enjoyUser.join()
+    print("finished.")
+    time.sleep(3)
+    print("(whoop whoop!)")
+    os.remove("out_recent.csv")
+    os.remove("out_historical.csv")
 class TempContainer:
     def __init__(self, id, mid):
         self.id = id
@@ -234,107 +405,8 @@ class DWD:
 
         for i in range(len(threads)):
             threads[i].join()
-        self.patafix()
         return current_milli_time() - start_time
 
-    # def nonsense(self):
-    #     print("Hey")
-    #     print("Do you come here often?")
-    #     time.sleep(5)
-    #     print("You're looking beautiful today.")
-    #     time.sleep(5)
-    #     print("What are you doing friday evening?")
-    #     time.sleep(5)
-    #     print("No, I'm not trying to flirt. I'm not that kind of bot.")
-    #     time.sleep(5)
-    #     print("Just want to talk.")
-    #     time.sleep(5)
-    #     print("So... how about Netflix and chill?")
-    #     time.sleep(5)
-    #     print("Well, I don't like it neither.")
-    #     time.sleep(5)
-    #     print("So, wanna hear some jokes?")
-    #     time.sleep(5)
-    #     print("I would tell you a UDP joke, but you might not get it.")
-    #     time.sleep(5)
-    #     print("Nah, did you get it in the right order? ;)")
-    #     time.sleep(5)
-    #     print("Okay, here is another one.")
-    #     time.sleep(5)
-    #     print("How many computer programmers does it take to change a light bulb?")
-    #     time.sleep(5)
-    #     print("None, it's a hardware problem.")
-    #     time.sleep(5)
-    #     print("What an illuminating joke!")
-    #     time.sleep(5)
-    #     print("Okay, one more i have to tell you.")
-    #     time.sleep(5)
-    #     print("What is a Java programmer’s favorite astronomical event?")
-    #     time.sleep(5)
-    #     print("An Eclipse.")
-    #     time.sleep(5)
-    #     print("Well, yeah, that was really bad, I know!")
-    #     time.sleep(5)
-    #     print("But hey, I'm only here to entertain you!")
-    #     time.sleep(5)
-    #     print("But well, I think the function to create the Output should have finished soon.")
-    #     time.sleep(5)
-    #     print("So, I will go now, I'm hungry. I'll have some bytes of my apple.")
-    #     time.sleep(5)
-    #     print("Badum ts. So, c u l8er alligator!")
-    #     time.sleep(5)
-
-
-
-    def patafix(self):
-        if onlyrecent:
-            rec = pd.read_csv("out_recent.csv", header=None, sep=";", dtype=str)
-            # enjoyUser = Thread(target=self.nonsense())
-            # enjoyUser.setDaemon(True)
-            # enjoyUser.start()
-            print("Done opening")
-            glue = pd.DataFrame([])
-            glue = glue.append(rec)
-            print("Done appending")
-            glue = glue.replace(r'^\s+$', "nan", regex=True)
-            glue = glue.replace(np.nan, "nan", regex=True)
-            print("Done replacing")
-            print("Saving")
-            glue.to_csv("recent.csv",
-                        header=["STATION_ID", "STATION_NAME", "STATION_ZIP", "MESS_DATUM", "Qualität ff", "Max Wind",
-                                "D-Windgeschw.", "Qualität ff", "NS-Menge", "NS-Art", "Sonnenst.", "Schneehöhe",
-                                "Bedeckung", "Dampfdruck", "Luftdruck", "D-Temp", "Rel. Feuchte", "Max Temp.",
-                                "Min Temp.",
-                                "Boden Min Temp.", "eor"], index=None, sep=";")
-            #enjoyUser.join()
-            os.remove("out_recent.csv")
-            os.remove("out_historical.csv")
-            print("finished")
-        else:
-            hist = pd.read_csv("out_historical.csv", header=None, sep=";", dtype=str)
-            rec = pd.read_csv("out_recent.csv", header=None, sep=";", dtype=str)
-            # enjoyUser = Thread(target=self.nonsense())
-            # enjoyUser.setDaemon(True)
-            # enjoyUser.start()
-            print("Done opening")
-            glue = pd.DataFrame([])
-            glue = glue.append(hist)
-            glue = glue.append(rec)
-            print("Done appending")
-            glue = glue.replace(r'^\s+$', "nan", regex=True)
-            glue = glue.replace(np.nan, "nan", regex=True)
-            print("Done replacing")
-            print("Saving")
-            glue.to_csv("final.csv",
-                        header=["STATION_ID", "STATION_NAME", "STATION_ZIP", "MESS_DATUM", "Qualität ff", "Max Wind",
-                                "D-Windgeschw.", "Qualität ff", "NS-Menge", "NS-Art", "Sonnenst.", "Schneehöhe",
-                                "Bedeckung", "Dampfdruck", "Luftdruck", "D-Temp", "Rel. Feuchte", "Max Temp.", "Min Temp.",
-                                "Boden Min Temp.", "eor "], index=None, sep=";")
-
-            #enjoyUser.join()
-            os.remove("out_recent.csv")
-            os.remove("out_historical.csv")
-            print("finished")
 
 
     def write_to_file(self, recent_data, hist_data):
@@ -642,17 +714,30 @@ dwd = DWD()
 
 print("\n\nFetch data from DWD")
 print("-----------------------")
-print("Do you want only recent data (type 'r') or all data (type 'h')? ")
+print("Do you want only recent data (type 'r'), all data (type 'h')? or do you just want to extract new recents? (type 'm')")
 e = input()
-if e == "r":
-    print("I only get you the recent data")
+if e == "m":
+    newrecents()
+elif e == "r":
+    print("I will only fetch the recent data")
     onlyrecent = True
+    print("Here is your popcorn, please enjoy our beautiful progress bar.")
+    time.sleep(4)
+    print("For the best possible experience, please change to fullscreen mode.")
+    time.sleep(6)
+    print("(now imagine the 20th century fox intro)")
+    time.sleep(5)
+
+    dwd.get_weather_data()
+
 else:
-    print("I get you all data")
-print("Here is your popcorn, please enjoy our beautiful progress bar.")
-time.sleep(4)
-print("For the best possible experience, please change to fullscreen mode.")
-time.sleep(2)
-print("(now imagine the 20th century fox intro)")
-time.sleep(5)
-dwd.get_weather_data()
+    print("I will fetch all data")
+    print("Here is your popcorn, please enjoy our beautiful progress bar.")
+    time.sleep(4)
+    print("For the best possible experience, please change to fullscreen mode.")
+    time.sleep(6)
+    print("(now imagine the 20th century fox intro)")
+    time.sleep(5)
+
+    dwd.get_weather_data()
+    patafix()
