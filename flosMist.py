@@ -606,13 +606,14 @@ class DWD:
         time0 = current_milli_time()
 
         # Name der Historical-Files: tageswerte_KL_00001_19370101_19860630_hist.zip
-        try:
-          urllib.request.urlretrieve(
-              self.file_url_historical + self.file_prefix + station.id + "_" + station.recording_start + "_" + station.recording_mid + self.file_suffix_historical,
-              local_file_historical + ".zip")
-          historicalValid = True
-        except Exception:
-          abc = 0
+        if not onlyrecent:
+            try:
+              urllib.request.urlretrieve(
+                  self.file_url_historical + self.file_prefix + station.id + "_" + station.recording_start + "_" + station.recording_mid + self.file_suffix_historical,
+                  local_file_historical + ".zip")
+              historicalValid = True
+            except Exception:
+              abc = 0
 
         zip_ref = zipfile.ZipFile(local_file + ".zip", 'r')
         zip_ref.extractall(local_file)
@@ -654,7 +655,7 @@ class DWD:
                 i += 1
         time0 = current_milli_time()
 
-        if(historicalValid):
+        if(historicalValid and not onlyrecent):
             with open(local_file_historical + ".csv") as csvfile:
                 readCSV = csv.reader(csvfile, delimiter=';')
                 i = 0
