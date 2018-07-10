@@ -535,6 +535,10 @@ class DWD:
         return row
 
 
+with open("api.keys", 'w') as out:
+    out.write("")
+    out.close()
+
 dwd = DWD()
 
 print("\n\nFetch data from DWD")
