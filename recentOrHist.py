@@ -74,10 +74,13 @@ class MeasuredData:
 
 
 class ProgressBar:
+
     def __init__(self):
         self.value = 0
         self.max_value = 1
-        self.start_time = 0
+        self.start_time = 0   
+        self.lock = threading.Lock()
+        self.flag = False
 
     def set_max(self, max):
         self.max_value = max
@@ -89,28 +92,49 @@ class ProgressBar:
         self.value = progress
 
     def show(self):
+
+        
+        self.lock.acquire()
+
         if(self.start_time == 0):
             self.start_time = current_milli_time()
 
         time_consumed = current_milli_time() - self.start_time
         progress = self.value/self.max_value
-        estimated_time = (time_consumed / progress)-time_consumed
+        estimated_time = ((time_consumed / progress)-time_consumed)/1000
 
-        print('[', end='')
-        for i in range(0, 101):
-            if(int(progress*100) < i):
+        min = int(estimated_time/60)
+        sec = int(estimated_time%60)
+
+        hint = "(" +str(int(progress*100)) + "% | " + str(min)+" minutes and "+str(sec)+ " seconds)"
+
+        width = shutil.get_terminal_size().columns-len(hint)-2;
+
+        write = sys.stdout.write
+
+        write("\b"*(width*2))
+        sys.stdout.flush()
+        
+
+        print(' ', end='')
+        for i in range(0, width+1):
+            if(int(progress*width) < i):
                 print(" ", end='')
-            elif(int(progress*100) == i):
-                if(progress == 0.99):
-                    print("(100%)=", end='')
-                    if int(estimated_time/1000) == 0:
-                        print("\n")
-                else:
-                    print("(" +str(int(progress*100)) + "% | " + str(int(estimated_time/1000)) + "sec)=>", end='')
+            elif(int(progress*width) == i):
+                print(hint, end='')
+                if(progress == 1):
+                    readableStart = (current_milli_time()-self.start_time)/1000
+                    min = int(readableStart/60)
+                    sec = int(readableStart%60)
+                    print("\n[runtime: " + str(min)+ " minutes and "+str(sec)+" seconds]")
+                    self.flag = True
             else:
-                print("=", end='')
+                print("█", end='')
 
-        print("]", end="\r")
+        if(self.flag == False):
+            print(" ",end='')
+
+        self.lock.release()
 
 class DWD:
     def __init__(self):
@@ -499,7 +523,6 @@ class DWD:
         try:
             urllib.request.urlretrieve(self.file_url + self.file_prefix + station.id + self.file_suffix,local_file + ".zip")
         except SocketError:
-            print("Connection Refused: Retrying ...                                                                   \n", end='')
             time.sleep(4)
             self.get_station_data(station, t_id)
             return
@@ -610,6 +633,10 @@ class DWD:
 
         return row
 
+
+with open("api.keys", 'w') as out:
+    out.write("")
+    out.close()
 
 dwd = DWD()
 
